@@ -69,3 +69,44 @@ describe('adjusted', () => {
     expect(Number(more) / Number(base)).toBeCloseTo(1.02, 3)
   })
 })
+
+import { lagosDay, rewardKey, rewardLines, saleRewardUsd, splitSkr } from './rewards'
+describe('rewards', () => {
+  const day = '2026-10-02'
+  const base = { status: 'paid', day, reward: 'pending', expected: 10_000_000n }
+  const sales = [
+    { ...base, id: 'a', sgtMint: 'SGT1', payer: 'P1', received: 1_510_000n },
+    { ...base, id: 'b', sgtMint: 'SGT1', payer: 'P1', received: 1_000_000n }, // same phone, same day
+    { ...base, id: 'c', sgtMint: null, payer: 'P2', received: 5_000_000n }, // not a Seeker
+    { ...base, id: 'd', sgtMint: 'SGT2', payer: 'P3', received: 2_000_000n, status: 'refunded' },
+    { ...base, id: 'e', sgtMint: 'SGT3', payer: 'P4', received: 3_000_000n, day: '2026-10-01' }, // earlier day, still pending
+    { ...base, id: 'f', sgtMint: 'SGT4', payer: 'P5', received: 3_000_000n, reward: 'skipped' },
+    { ...base, id: 'g', sgtMint: 'SGT5', payer: 'P6', received: 1_000_000_000n, expected: 1_000_000n }, // overpaid 1000 USDC
+  ]
+  const lines = rewardLines(sales, 2, new Set())
+  it("gives one line per Seeker token per day, summing that phone's purchases", () => {
+    const l1 = lines.find((l) => l.sgtMint === 'SGT1')!
+    expect(l1.usd).toBe(50_200n) // 2% of 2.51 USDC
+    expect(l1.saleIds).toEqual(['a', 'b'])
+  })
+  it('keeps pending rewards from earlier days, drops skipped and refunded', () => {
+    expect(lines.map((l) => l.sgtMint).sort()).toEqual(['SGT1', 'SGT3', 'SGT5'])
+  })
+  it('rewards the price, not an overpayment', () => {
+    expect(lines.find((l) => l.sgtMint === 'SGT5')!.usd).toBe(20_000n) // 2% of 1 USDC, not of 1000
+  })
+  it('skips tokens already rewarded that day', () => {
+    expect(rewardLines(sales, 2, new Set([rewardKey(day, 'SGT1')])).some((l) => l.sgtMint === 'SGT1')).toBe(false)
+  })
+  it('splits SKR in proportion and never over-spends', () => {
+    const parts = splitSkr([{ usd: 1n }, { usd: 2n }], 100n)
+    expect(parts).toEqual([33n, 66n])
+  })
+  it('computes the reward held back on refund', () => {
+    expect(saleRewardUsd(1_510_000n, 1_510_000n, 2)).toBe(30_200n)
+  })
+  it('uses the Lagos calendar day', () => {
+    expect(lagosDay(Date.UTC(2026, 9, 2, 23, 30))).toBe('2026-10-03')
+    expect(lagosDay(Date.UTC(2026, 9, 2, 22, 59))).toBe('2026-10-02')
+  })
+})

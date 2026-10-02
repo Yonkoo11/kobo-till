@@ -1,27 +1,18 @@
-import { NetworkFeatureIndex } from '@/features/network/network-feature-index'
-import { AccountFeatureIndex } from '@/features/account/account-feature-index'
-import { AppConfig } from '@/constants/app-config'
-import { Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import React from 'react'
-import { appStyles } from '@/constants/app-styles'
+import { Redirect } from 'expo-router'
+import { ActivityIndicator, View } from 'react-native'
+import { useShopWallet } from '@/hooks/use-shop-wallet'
+import { useStore } from '@/state/store'
 
-export default function HomeScreen() {
-  return (
-    <SafeAreaView style={appStyles.screen}>
-      <View style={appStyles.stack}>
-        <Text style={appStyles.title}>App Config</Text>
-        <View style={appStyles.card}>
-          <Text>
-            Name <Text style={{ fontWeight: 'bold' }}>{AppConfig.identity.name}</Text>
-          </Text>
-          <Text>
-            URL <Text style={{ fontWeight: 'bold' }}>{AppConfig.identity.uri}</Text>
-          </Text>
-        </View>
-        <AccountFeatureIndex />
-        <NetworkFeatureIndex />
+export default function Start() {
+  const { ready, data } = useStore()
+  const { address } = useShopWallet()
+  if (!ready)
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator />
       </View>
-    </SafeAreaView>
-  )
+    )
+  if (!address) return <Redirect href="/welcome" />
+  if (!data.shop) return <Redirect href="/setup" />
+  return <Redirect href="/(tabs)" />
 }

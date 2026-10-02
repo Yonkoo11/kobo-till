@@ -1,5 +1,6 @@
 import { Address, Rpc, SolanaRpcApi } from '@solana/kit'
 import { SGT_GROUP, SKR, TOKEN_2022_PROGRAM } from './constants'
+import { ata } from './tokens'
 
 type ParsedAccount = { pubkey: Address; account: { data: { parsed: { info: any } } } }
 
@@ -21,8 +22,11 @@ export async function getSgtMint(rpc: Rpc<SolanaRpcApi>, owner: Address): Promis
   return null
 }
 
-/** True when `owner` already has an SKR token account (rewards never create one: rent ≈ ₦242). */
+/**
+ * True when `owner`'s associated SKR account exists, the exact account a reward transfer targets.
+ * Rewards never create one (rent ≈ ₦242, more than a typical reward).
+ */
 export async function hasSkrAccount(rpc: Rpc<SolanaRpcApi>, owner: Address): Promise<boolean> {
-  const res = await rpc.getTokenAccountsByOwner(owner, { mint: SKR.mint }, { encoding: 'jsonParsed' }).send()
-  return res.value.length > 0
+  const res = await rpc.getAccountInfo(await ata(owner, SKR.mint), { encoding: 'base64' }).send()
+  return res.value !== null
 }

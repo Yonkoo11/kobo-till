@@ -1,24 +1,21 @@
 {
   "expo": {
-    "name": "expo-kit-minimal",
-    "slug": "expo-kit-minimal",
+    "name": "Kobo",
+    "slug": "kobo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "expo-kit-minimal",
+    "scheme": "kobo",
     "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FAF8F4",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.expo_kit_minimal"
+      "package": "com.kobotill.app"
     },
     "web": {
       "output": "static",
