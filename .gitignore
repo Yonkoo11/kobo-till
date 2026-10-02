@@ -48,3 +48,4 @@ deployments/local-*.json
 # Internal planning / working notes — never published. Public docs go in docs/.
 ai/
 .private/
+probe/node_modules
