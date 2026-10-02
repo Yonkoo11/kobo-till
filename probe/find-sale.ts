@@ -10,7 +10,7 @@ const sale = {
   ...createSale({ naira: 1, rate: 1, coin, recipient: address(arg('recipient')), reference: address(arg('reference')), label: 'probe' }),
   expected: BigInt(Math.round(Number(arg('expect')) * 10 ** COINS[coin].decimals)),
 }
-const s = await findSale(createSolanaRpc(RPC_URL), sale)
+const s = await findSale(createSolanaRpc(RPC_URL), sale, { usedSignatures: new Set(), otherReferences: new Set() })
 if (s.kind === 'waiting') console.log('WAITING')
 else if (s.kind === 'underpaid') console.log(`UNDERPAID got ${formatCoins(s.received)} want ${formatCoins(sale.expected)}`)
 else console.log(`${s.kind.toUpperCase()} ${formatCoins(s.received)} ${coin} from ${s.payer} sig ${s.signature}`)

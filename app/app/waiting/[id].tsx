@@ -30,6 +30,7 @@ export default function Waiting() {
   }, [sale?.state, sale])
   if (!sale) return <Screen><Body>…</Body></Screen>
   if (sale.state === 'waiting') return <WaitingView sale={sale} onCancel={() => { patchSale(sale.id, { state: 'cancelled' }); router.back() }} twins={data.sales.filter((o) => o.state === 'waiting' && o.id !== sale.id && o.coin === sale.coin && o.expected === sale.expected).length > 0} />
+  if (sale.state === 'cancelled' || sale.state === 'refunded' || !sale.received) return null // leaving the screen
   if (sale.state === 'underpaid') return <UnderpaidView sale={sale} />
   return <PaidView sale={sale} />
 }

@@ -1,6 +1,7 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { IS_TEST_BUILD } from '@/constants/app-config'
 import { CoinId } from '@/core/constants'
 import { createSale, newReference } from '@/core/sale'
 import { lagosDay } from '@/core/rewards'
@@ -50,6 +51,7 @@ export default function Till() {
 
   return (
     <Screen>
+      {IS_TEST_BUILD ? <Banner text={copy.testBanner} tone="danger" /> : null}
       {!canSign ? <Banner text={copy.viewOnlyBanner} tone="info" /> : null}
       <View style={s.display}>
         <Text style={s.amount} adjustsFontSizeToFit numberOfLines={1}>₦{naira(value)}</Text>

@@ -18,9 +18,13 @@ export function useRate() {
     if (r) update((d) => ({ ...d, rate: { value: r.value, at: r.at, disagree: r.disagree } }))
     setLoading(false)
   }, [update])
+  const stale = !data.rate || Date.now() - data.rate.at > 120_000
   useEffect(() => {
     refresh()
-  }, [refresh])
+    // Retry every minute while the rate is stale (offline at launch, lost signal), else every 10 minutes.
+    const id = setInterval(refresh, stale ? 60_000 : 600_000)
+    return () => clearInterval(id)
+  }, [refresh, stale])
 
   const adj = data.shop?.adjustPct ?? 0
   const cached = data.rate

@@ -1,8 +1,10 @@
 import { address } from '@solana/kit'
 
 // Verified 2026-10-02, see CLAUDE.md "Verified Facts".
+// Test builds only (EXPO_PUBLIC_KOBO_TEST_USDC): a local test coin stands in for USDC. Never set in a real build.
+export const TEST_USDC = process.env.EXPO_PUBLIC_KOBO_TEST_USDC
 export const COINS = {
-  USDC: { mint: address('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), decimals: 6 },
+  USDC: { mint: address(TEST_USDC || 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), decimals: 6 },
   USDT: { mint: address('Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'), decimals: 6 },
 } as const
 export type CoinId = keyof typeof COINS

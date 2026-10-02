@@ -87,4 +87,5 @@ export const copy = {
   refundConfirm: (coins: string, coin: string, address: string) => `Refund ${coins} ${coin} to this address?\n${address}`,
   refundHeldBack: (reward: string, coin: string) => `${reward} ${coin} Seeker reward already paid is kept back.`,
   refundAlready: 'Already refunded. Kobo found the refund on Solana.',
+  testBanner: 'Test network: not real money',
 } as const
