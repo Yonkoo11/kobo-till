@@ -1,4 +1,4 @@
-import { address } from '@solana/kit'
+import { address, isSolanaError, SOLANA_ERROR__JSON_RPC__INVALID_PARAMS } from '@solana/kit'
 import { useQuery } from '@tanstack/react-query'
 import { COINS } from '@/core/constants'
 import { useRpc } from './use-rpc'
@@ -13,7 +13,16 @@ export function useDollarBalance(owner: string | null, only?: 'USDC' | 'USDT') {
     queryFn: async () => {
       let total = 0n
       for (const c of only ? [COINS[only]] : Object.values(COINS)) {
-        const r = await rpc.getTokenAccountsByOwner(address(owner!), { mint: c.mint }, { encoding: 'jsonParsed' }).send()
+        // A coin that does not exist on this network (USDT on a local test network) holds nothing.
+        const r = await rpc
+          .getTokenAccountsByOwner(address(owner!), { mint: c.mint }, { encoding: 'jsonParsed' })
+          .send()
+          .catch((e: unknown) => {
+            const notFound =
+              isSolanaError(e, SOLANA_ERROR__JSON_RPC__INVALID_PARAMS) && /could not find mint/i.test(e.context.__serverMessage)
+            if (notFound) return { value: [] }
+            throw e
+          })
         for (const a of r.value as any[]) total += BigInt(a.account.data.parsed.info.tokenAmount.amount)
       }
       return total

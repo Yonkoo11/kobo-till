@@ -35,7 +35,7 @@ export default function Settings() {
       <Button title={copy.setupTitle} kind="secondary" onPress={() => router.push('/setup')} />
       <Button title={copy.shopQrTitle} kind="secondary" onPress={() => router.push('/shop-qr')} />
       <Button title={copy.cashout} kind="secondary" onPress={() => router.push('/cashout')} />
-      <Button title={copy.disconnect} kind="link" onPress={onDisconnect} />
+      <Button title={copy.disconnect} kind="danger" onPress={onDisconnect} />
     </Screen>
   )
 }

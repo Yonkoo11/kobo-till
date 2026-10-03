@@ -103,7 +103,7 @@ export function Button({
 }: {
   title: string
   onPress: () => void
-  kind?: 'primary' | 'secondary' | 'link'
+  kind?: 'primary' | 'secondary' | 'link' | 'danger'
   disabled?: boolean
   busy?: boolean
 }) {
@@ -116,7 +116,7 @@ export function Button({
       style={({ pressed }) => [s.btn, s[kind], off && s.off, pressed && !off && s.pressed]}
     >
       {busy ? <ActivityIndicator color={kind === 'primary' ? t.accentInk : t.accent} /> : null}
-      <Text style={[s.btnText, kind === 'secondary' && { color: t.ink1 }, kind === 'link' && { color: t.accent }]}>{title}</Text>
+      <Text style={[s.btnText, kind === 'secondary' && { color: t.ink1 }, kind === 'link' && { color: t.accent }, kind === 'danger' && { color: t.danger }]}>{title}</Text>
     </Pressable>
   )
 }
@@ -166,6 +166,7 @@ const s = StyleSheet.create({
   primary: { backgroundColor: t.accent },
   secondary: { backgroundColor: t.slip, borderWidth: 1, borderColor: t.rule },
   link: { backgroundColor: 'transparent', minHeight: 48 },
+  danger: { backgroundColor: 'transparent', minHeight: 48 },
   off: { opacity: 0.4 },
   pressed: { opacity: 0.86 },
   btnText: { ...t.size.body, fontFamily: t.font.semibold, color: t.accentInk },
