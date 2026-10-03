@@ -2,7 +2,7 @@ import { address } from '@solana/kit'
 import { useMobileWallet } from '@wallet-ui/react-native-kit'
 import { useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
-import { Alert, Linking } from 'react-native'
+import { Alert, Linking, View } from 'react-native'
 import { COINS } from '@/core/constants'
 import { findPriorRefund } from '@/core/refund-check'
 import { transferIx } from '@/core/tokens'
@@ -13,7 +13,7 @@ import { useStore } from '@/state/store'
 import { refundAmount } from '@/state/refund'
 import { copy } from '@/ui/copy'
 import { coins, hhmm, naira, rateText, short, solscan } from '@/ui/format'
-import { Banner, Body, Button, Screen, Title } from '@/ui/kit'
+import { Banner, Body, Button, Line, Meta, Screen, Slip, Title } from '@/ui/kit'
 
 const REWARD_TEXT: Record<string, string> = {
   pending: copy.paidSeekerBadge,
@@ -65,12 +65,18 @@ export default function SaleDetail() {
 
   return (
     <Screen>
-      <Title>₦{naira(sale.naira)}</Title>
-      <Body>{coins(sale.received ?? sale.expected)} {sale.coin} · ₦{rateText(sale.rate)} per $1</Body>
-      <Body muted>{hhmm(sale.createdAt)} · {short(sale.payer)}{sale.sgtMint ? ' · Seeker' : ''}</Body>
-      {REWARD_TEXT[sale.reward] ? <Body muted>{REWARD_TEXT[sale.reward]}</Body> : null}
-      {sale.signature ? <Button title={copy.viewOnSolscan} kind="link" onPress={() => Linking.openURL(solscan(sale.signature!))} /> : null}
-      {refundable && heldBack > 0n ? <Body muted>{copy.refundHeldBack(coins(heldBack), sale.coin)}</Body> : null}
+      <Slip>
+        <Title>₦{naira(sale.naira)}</Title>
+        <View>
+          <Line label={copy.receiptCoin} value={`${coins(sale.received ?? sale.expected)} ${sale.coin}`} />
+          <Line label={copy.receiptRate} value={`₦${rateText(sale.rate)} per $1`} />
+          <Line label={copy.receiptTime} value={hhmm(sale.createdAt)} />
+          <Line label={copy.receiptFrom} value={`${short(sale.payer)}${sale.sgtMint ? ' · Seeker' : ''}`} last={!REWARD_TEXT[sale.reward]} />
+          {REWARD_TEXT[sale.reward] ? <Line label={copy.receiptReward} value={REWARD_TEXT[sale.reward]} last /> : null}
+        </View>
+        {sale.signature ? <Button title={copy.viewOnSolscan} kind="link" onPress={() => Linking.openURL(solscan(sale.signature!)).catch(() => undefined)} /> : null}
+      </Slip>
+      {refundable && heldBack > 0n ? <Meta>{copy.refundHeldBack(coins(heldBack), sale.coin)}</Meta> : null}
       {msg ? <Banner text={msg.text} tone={msg.tone} /> : null}
       {refundable ? <Button title={busy ? copy.refundOpening : copy.refund} kind="secondary" busy={busy} onPress={confirmRefund} /> : null}
     </Screen>

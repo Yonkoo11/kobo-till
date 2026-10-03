@@ -9,6 +9,10 @@ export const usd = (base: bigint) => (Number(base) / 1e6).toFixed(2)
 export function hhmm(ms: number): string {
   return new Date(ms + 3600_000).toISOString().slice(11, 16)
 }
+/** HH:MM:SS on the Lagos clock. */
+export function hhmmss(ms: number): string {
+  return new Date(ms + 3600_000).toISOString().slice(11, 19)
+}
 export function dateText(ms: number): string {
   return new Date(ms + 3600_000).toISOString().slice(0, 10)
 }

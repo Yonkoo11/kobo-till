@@ -2,7 +2,7 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import { Linking } from 'react-native'
 import { useShopWallet } from '@/hooks/use-shop-wallet'
 import { copy } from '@/ui/copy'
-import { Body, Button, Screen } from '@/ui/kit'
+import { Body, Button, Meta, Screen } from '@/ui/kit'
 
 // Kobo never converts: these open licensed exchanges (SEC approval-in-principle, Aug 2024, FACTS F-027).
 // Play listings verified 2026-10-02: "Busha: Make your money better!" and "Quidax - Buy Bitcoin & Crypto".
@@ -20,7 +20,7 @@ export default function Cashout() {
       {EXCHANGES.map((e) => (
         <Button key={e.title} title={e.title} kind="secondary" onPress={() => Linking.openURL(e.url).catch(() => undefined)} />
       ))}
-      <Body muted selectable>{address}</Body>
+      <Meta selectable>{address}</Meta>
       <Button title={copy.copyAddress} kind="link" onPress={() => address && Clipboard.setString(address)} />
     </Screen>
   )

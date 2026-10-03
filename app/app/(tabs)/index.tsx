@@ -12,7 +12,7 @@ import { StoredSale } from '@/state/types'
 import { copy } from '@/ui/copy'
 import { randomBytes } from '@/utils/random'
 import { coins, hhmm, naira, rateText } from '@/ui/format'
-import { Banner, Button, Screen } from '@/ui/kit'
+import { Banner, Button, Meta, Screen, Slip } from '@/ui/kit'
 import { t } from '@/ui/theme'
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '00', '0', '⌫']
@@ -53,23 +53,24 @@ export default function Till() {
     <Screen>
       {IS_TEST_BUILD ? <Banner text={copy.testBanner} tone="danger" /> : null}
       {!canSign ? <Banner text={copy.viewOnlyBanner} tone="info" /> : null}
-      <View style={s.display}>
+      <Slip>
+        <Meta>{data.shop?.name}</Meta>
         <Text style={s.amount} adjustsFontSizeToFit numberOfLines={1}>₦{naira(value)}</Text>
         <Text style={s.coin}>{preview ? `≈ ${preview} ${coin}` : ' '}</Text>
         <RateLine view={view} onManual={setManual} typed={typedRate} setTyped={setTypedRate} />
-      </View>
+      </Slip>
       {accepted.length > 1 ? (
         <View style={s.coinRow}>
           {accepted.map((c) => (
             <Pressable key={c} onPress={() => setCoin(c)} style={[s.coinChip, c === coin && s.coinChipOn]} accessibilityRole="button">
-              <Text style={[s.coinChipText, c === coin && { color: t.accentInk }]}>{c}</Text>
+              <Text style={[s.coinChipText, c === coin && { color: t.slip }]}>{c}</Text>
             </Pressable>
           ))}
         </View>
       ) : null}
       <View style={s.pad}>
         {KEYS.map((k) => (
-          <Pressable key={k} onPress={() => press(k)} style={({ pressed }) => [s.key, pressed && { backgroundColor: t.line }]} accessibilityRole="button" accessibilityLabel={k === '⌫' ? 'Delete' : k}>
+          <Pressable key={k} onPress={() => press(k)} style={({ pressed }) => [s.key, pressed && s.keyOn]} accessibilityRole="button" accessibilityLabel={k === '⌫' ? 'Delete' : k}>
             <Text style={s.keyText}>{k}</Text>
           </Pressable>
         ))}
@@ -98,7 +99,7 @@ function RateLine(p: { view: ReturnType<typeof useRate>['view']; onManual: (v: n
             const n = Number(x)
             p.onManual(n > 100 ? n : null)
           }}
-          style={{ borderBottomWidth: 1, borderColor: t.line, minWidth: 72, fontSize: t.font.body }}
+          style={s.rateInput}
         />
       </View>
     )
@@ -114,15 +115,16 @@ function RateLine(p: { view: ReturnType<typeof useRate>['view']; onManual: (v: n
 }
 
 const s = StyleSheet.create({
-  display: { alignItems: 'center', paddingVertical: t.space(2), gap: t.space(0.5) },
-  amount: { fontSize: t.font.amount, fontWeight: '700', color: t.ink, fontVariant: ['tabular-nums'] },
-  coin: { fontSize: t.font.coin, color: t.ink, fontVariant: ['tabular-nums'] },
-  rate: { fontSize: t.font.small, color: t.muted },
-  coinRow: { flexDirection: 'row', gap: t.space(1), justifyContent: 'center' },
-  coinChip: { minHeight: 40, paddingHorizontal: t.space(2), borderRadius: 20, borderWidth: 1, borderColor: t.line, justifyContent: 'center', backgroundColor: t.surface },
-  coinChipOn: { backgroundColor: t.accent, borderColor: t.accent },
-  coinChipText: { fontSize: t.font.body, fontWeight: '600', color: t.ink },
+  amount: { ...t.size.amount, fontFamily: t.font.medium, color: t.ink1, fontVariant: ['tabular-nums'] },
+  coin: { ...t.size.coin, fontFamily: t.font.medium, color: t.ink1, fontVariant: ['tabular-nums'] },
+  rate: { ...t.size.meta, fontFamily: t.font.regular, color: t.ink2 },
+  rateInput: { ...t.size.body, fontFamily: t.font.regular, color: t.ink1, borderBottomWidth: 1, borderColor: t.rule, minWidth: 72, paddingVertical: t.space(1) },
+  coinRow: { flexDirection: 'row', gap: t.space(2), justifyContent: 'center' },
+  coinChip: { minHeight: 44, paddingHorizontal: t.space(4), borderRadius: t.radius.chip, borderWidth: 1, borderColor: t.rule, justifyContent: 'center', backgroundColor: t.slip },
+  coinChipOn: { backgroundColor: t.ink1, borderColor: t.ink1 },
+  coinChipText: { ...t.size.body, fontFamily: t.font.semibold, color: t.ink1 },
   pad: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'stretch' },
-  key: { width: '33.33%', height: '25%', alignItems: 'center', justifyContent: 'center', minHeight: t.tap },
-  keyText: { fontSize: 28, fontWeight: '500', color: t.ink },
+  key: { width: '33.33%', height: '25%', alignItems: 'center', justifyContent: 'center', minHeight: t.tap, borderRadius: t.radius.control },
+  keyOn: { backgroundColor: t.accentSoft },
+  keyText: { ...t.size.title, fontFamily: t.font.regular, color: t.ink1, fontVariant: ['tabular-nums'] },
 })

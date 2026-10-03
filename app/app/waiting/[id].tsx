@@ -1,10 +1,10 @@
 import * as Haptics from 'expo-haptics'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useRef } from 'react'
-import { Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
+import { Linking, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
 import { TIMING } from '@/constants/app-config'
-import { useOnline } from '@/hooks/online'
+import { useLastCheck, useOnline } from '@/hooks/online'
 import { useNow } from '@/hooks/use-now'
 import { createSale, newReference, saleUrl } from '@/core/sale'
 import { lagosDay } from '@/core/rewards'
@@ -13,8 +13,8 @@ import { toSale } from '@/state/convert'
 import { StoredSale } from '@/state/types'
 import { copy } from '@/ui/copy'
 import { randomBytes } from '@/utils/random'
-import { coins, dateText, hhmm, naira, short, solscan } from '@/ui/format'
-import { Banner, Body, Button, Screen, Title } from '@/ui/kit'
+import { coins, dateText, hhmm, hhmmss, naira, rateText, short, solscan } from '@/ui/format'
+import { Banner, Body, Button, ChainCheck, Line, Meta, Print, Screen, Slip, Title } from '@/ui/kit'
 import { t } from '@/ui/theme'
 
 export default function Waiting() {
@@ -37,19 +37,26 @@ export default function Waiting() {
 
 function WaitingView({ sale, onCancel, twins }: { sale: StoredSale; onCancel: () => void; twins: boolean }) {
   const { width } = useWindowDimensions()
-  const size = Math.min(width - 32, 360)
+  const size = Math.min(width - 64, 320)
   const online = useOnline()
+  const checkedAt = useLastCheck()
   const now = useNow(5000)
   const long = now - sale.createdAt > TIMING.stillWaitingMs
   return (
-    <Screen style={{ alignItems: 'center' }}>
-      <Title>{sale.label}</Title>
-      <View style={{ padding: 16, backgroundColor: '#fff', borderRadius: t.radius }}>
-        <QRCode value={saleUrl(toSale(sale))} size={size - 32} quietZone={0} />
+    <Screen>
+      <Slip style={{ alignItems: 'center' }}>
+        <Meta>{sale.label}</Meta>
+        <View style={s.qr}>
+          <QRCode value={saleUrl(toSale(sale))} size={size - 32} quietZone={0} />
+        </View>
+        <Text style={s.amountLine}>₦{naira(sale.naira)} · {coins(sale.expected)} {sale.coin}</Text>
+        <Meta>{copy.rateLocked(rateText(sale.rate), hhmm(sale.createdAt))}</Meta>
+        <Meta>{copy.waitingScanHint}</Meta>
+      </Slip>
+      <View style={{ gap: t.space(1) }}>
+        <Body>{copy.waitingLine}</Body>
+        {checkedAt ? <ChainCheck at={checkedAt} text={copy.chainChecked(hhmmss(checkedAt))} /> : null}
       </View>
-      <Text style={s.amountLine}>₦{naira(sale.naira)} · {coins(sale.expected)} {sale.coin}</Text>
-      <Body muted>{copy.waitingScanHint}</Body>
-      <Body>● {copy.waitingLine}</Body>
       {!online ? <Banner text={copy.waitingOffline} /> : null}
       {long ? <Banner text={copy.waitingLong(hhmm(sale.createdAt))} tone="info" /> : null}
       {twins ? <Banner text={copy.sameAmountNote} tone="info" /> : null}
@@ -66,14 +73,24 @@ function PaidView({ sale }: { sale: StoredSale }) {
       message: copy.receiptText(data.shop?.name ?? sale.label, coins(sale.received!), sale.coin, naira(sale.naira), hhmm(sale.paidAt!), dateText(sale.paidAt!), solscan(sale.signature!)),
     }).catch(() => undefined)
   return (
-    <Screen style={{ alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: 96, color: t.accent }}>✓</Text>
-      <Title style={{ fontSize: 36 }}>{copy.paidTitle(naira(sale.naira))}</Title>
-      <Body>{copy.paidFrom(coins(sale.received!), sale.coin, short(sale.payer))}</Body>
-      {sale.state === 'overpaid' ? <Body muted>+{coins(BigInt(sale.received!) - BigInt(sale.expected))} {sale.coin}</Body> : null}
-      {sale.matchedBy === 'amount' ? <Body muted>{copy.paidByAmountNote}</Body> : null}
-      {sale.sgtMint ? <Banner text={copy.paidSeekerBadge} tone="info" /> : null}
-      <View style={{ height: t.space(2) }} />
+    <Screen>
+      <Print>
+        <Slip>
+          <Text style={s.tick} accessibilityElementsHidden>✓</Text>
+          <Title>{copy.paidTitle(naira(sale.naira))}</Title>
+          {sale.matchedBy === 'amount' ? <Meta>{copy.paidByAmountNote}</Meta> : null}
+          <View>
+            <Line label={copy.receiptReceived} value={`${coins(sale.received!)} ${sale.coin}`} />
+            {sale.state === 'overpaid' ? <Line label="" value={`+${coins(BigInt(sale.received!) - BigInt(sale.expected))} ${sale.coin}`} /> : null}
+            <Line label={copy.receiptFrom} value={short(sale.payer)} />
+            <Line label={copy.receiptTime} value={hhmm(sale.paidAt!)} />
+            <Line label={copy.receiptRate} value={`₦${rateText(sale.rate)} per $1`} last />
+          </View>
+          {sale.sgtMint ? <Text style={s.badge}>{copy.paidSeekerBadge}</Text> : null}
+          {sale.signature ? <Button title={copy.viewOnSolscan} kind="link" onPress={() => Linking.openURL(solscan(sale.signature!)).catch(() => undefined)} /> : null}
+        </Slip>
+      </Print>
+      <View style={{ flex: 1 }} />
       <Button title={copy.shareReceipt} kind="secondary" onPress={share} />
       <Button title={copy.newSale} onPress={() => router.replace('/(tabs)')} />
     </Screen>
@@ -91,9 +108,16 @@ function UnderpaidView({ sale }: { sale: StoredSale }) {
     router.replace(`/waiting/${stored.id}`)
   }
   return (
-    <Screen style={{ justifyContent: 'center' }}>
-      <Title style={{ color: t.warn }}>{copy.underpaidTitle(naira(shortNaira))}</Title>
-      <Body>{copy.underpaidBody(coins(sale.received!), coins(sale.expected), sale.coin)}</Body>
+    <Screen>
+      <Slip>
+        <Title style={{ color: t.warn }}>{copy.underpaidTitle(naira(shortNaira))}</Title>
+        <Meta>{copy.underpaidBody(coins(sale.received!), coins(sale.expected), sale.coin)}</Meta>
+        <View>
+          <Line label={copy.receiptReceived} value={`${coins(sale.received!)} ${sale.coin}`} />
+          <Line label={copy.receiptExpected} value={`${coins(sale.expected)} ${sale.coin}`} last />
+        </View>
+      </Slip>
+      <View style={{ flex: 1 }} />
       <Button title={copy.chargeRest} onPress={chargeRest} />
       <Button title={copy.acceptAsIs} kind="secondary" onPress={() => { patchSale(sale.id, { state: 'paid' }); router.replace('/(tabs)') }} />
     </Screen>
@@ -101,5 +125,8 @@ function UnderpaidView({ sale }: { sale: StoredSale }) {
 }
 
 const s = StyleSheet.create({
-  amountLine: { fontSize: t.font.coin, fontWeight: '700', color: t.ink, fontVariant: ['tabular-nums'] },
+  qr: { padding: t.space(4), backgroundColor: t.slip },
+  amountLine: { ...t.size.coin, fontFamily: t.font.medium, color: t.ink1, fontVariant: ['tabular-nums'] },
+  tick: { ...t.size.amount, fontFamily: t.font.medium, color: t.accent },
+  badge: { ...t.size.meta, fontFamily: t.font.semibold, color: t.ink1, backgroundColor: t.accentSoft, borderRadius: t.radius.chip, paddingHorizontal: t.space(3), paddingVertical: t.space(1), alignSelf: 'flex-start', overflow: 'hidden' },
 })

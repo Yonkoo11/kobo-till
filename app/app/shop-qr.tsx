@@ -6,7 +6,8 @@ import QRCode from 'react-native-qrcode-svg'
 import { useShopWallet } from '@/hooks/use-shop-wallet'
 import { useStore } from '@/state/store'
 import { copy } from '@/ui/copy'
-import { Banner, Body, Button, Screen, Title } from '@/ui/kit'
+import { Banner, Button, Meta, Screen, Slip, Title } from '@/ui/kit'
+import { t } from '@/ui/theme'
 
 /** Static Solana Pay QR (recipient + label, no amount) for printing at the counter. */
 export default function ShopQr() {
@@ -29,12 +30,16 @@ export default function ShopQr() {
     })
   }
   return (
-    <Screen style={{ alignItems: 'center' }}>
-      <Title>{copy.shopQrTitle}</Title>
-      <Body muted>{data.shop?.name}</Body>
-      <View style={{ padding: 16, backgroundColor: '#fff', borderRadius: 12 }}>
-        <QRCode value={url} size={Math.min(width - 64, 320)} getRef={(r) => (ref.current = r as never)} />
-      </View>
+    <Screen>
+      <Meta>{copy.shopQrTitle}</Meta>
+      <Slip style={{ alignItems: 'center' }}>
+        <Title>{data.shop?.name}</Title>
+        <View style={{ padding: t.space(4) }}>
+          <QRCode value={url} size={Math.min(width - 96, 320)} getRef={(r) => (ref.current = r as never)} />
+        </View>
+        <Meta>{copy.waitingScanHint}</Meta>
+      </Slip>
+      <View style={{ flex: 1 }} />
       {error ? <Banner text={copy.saveFailed} tone="danger" /> : null}
       <Button title={copy.saveImage} onPress={save} />
     </Screen>

@@ -8,7 +8,7 @@ import { useRpc } from '@/hooks/use-rpc'
 import { useStore } from '@/state/store'
 import { StoredSale } from '@/state/types'
 import { toSale } from '@/state/convert'
-import { setOnline } from './online'
+import { markChecked, setOnline } from './online'
 
 /** Polls open sales in the background so a payment confirms even if the till screen was left. */
 export function SaleWatcher() {
@@ -38,7 +38,10 @@ export function SaleWatcher() {
       for (const s of batch) {
         if (stop) return
         await checkOne(s, open)
-          .then(() => setOnline(true))
+          .then(() => {
+            setOnline(true)
+            markChecked()
+          })
           .catch(() => setOnline(false)) // offline: try again next tick
       }
     }

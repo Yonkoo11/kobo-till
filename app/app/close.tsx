@@ -10,7 +10,7 @@ import { useShopWallet } from '@/hooks/use-shop-wallet'
 import { useStore } from '@/state/store'
 import { copy } from '@/ui/copy'
 import { coins, naira, short, usd } from '@/ui/format'
-import { Banner, Body, Button, Screen, Title } from '@/ui/kit'
+import { Banner, Body, Button, Line, Meta, Screen, Slip, Title } from '@/ui/kit'
 import { t } from '@/ui/theme'
 
 export default function Close() {
@@ -54,18 +54,26 @@ export default function Close() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={{ gap: t.space(2) }}>
-        <Title>{copy.closeSummary(c.count, naira(c.nairaTotal))}</Title>
-        {c.lines === null ? <Body muted>…</Body> : null}
-        {c.lines && c.lines.length === 0 ? <Body>{copy.closeNone}</Body> : null}
-        {eligible.length > 0 ? <Body>{copy.closeRewards(eligible.length, String(data.shop?.rewardPct ?? 0), usd(total), skrPreview ?? '…')}</Body> : null}
-        {(c.lines ?? []).map((l) => (
-          <View key={l.key} style={{ opacity: l.hasSkr ? 1 : 0.45 }}>
-            <Body>{short(l.payer)} · ${usd(l.usd)}{l.hasSkr ? (step === 'done' ? ` · ${copy.sent}` : '') : ` · ${copy.noSkrAccount}`}</Body>
+      <ScrollView contentContainerStyle={{ gap: t.space(4) }}>
+        <Slip>
+          <Title>{copy.closeSummary(c.count, naira(c.nairaTotal))}</Title>
+          {c.lines === null ? <Meta>…</Meta> : null}
+          {c.lines && c.lines.length === 0 ? <Body>{copy.closeNone}</Body> : null}
+          {eligible.length > 0 ? <Meta>{copy.closeRewards(eligible.length, String(data.shop?.rewardPct ?? 0), usd(total), skrPreview ?? '…')}</Meta> : null}
+          <View>
+            {(c.lines ?? []).map((l, i, all) => (
+              <View key={l.key} style={{ opacity: l.hasSkr ? 1 : 0.4 }}>
+                <Line
+                  label={short(l.payer)}
+                  value={`$${usd(l.usd)}${l.hasSkr ? (step === 'done' ? ` · ${copy.sent}` : '') : ` · ${copy.noSkrAccount}`}`}
+                  last={i === all.length - 1}
+                />
+              </View>
+            ))}
           </View>
-        ))}
-        {step === 'quoting' ? <Body muted>{copy.quoteLoading}</Body> : null}
-        {step === 'approving' ? <Body muted>{copy.approveLoading}</Body> : null}
+        </Slip>
+        {step === 'quoting' ? <Meta>{copy.quoteLoading}</Meta> : null}
+        {step === 'approving' ? <Meta>{copy.approveLoading}</Meta> : null}
         {error ? <Banner text={error} tone="danger" /> : null}
       </ScrollView>
       {eligible.length > 0 && step !== 'done' ? (

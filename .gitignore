@@ -52,3 +52,5 @@ probe/node_modules
 .tools/
 probe/.devnet.json
 probe/.localnet.json
+probe/.localnet*.json
+design/measure/

@@ -18,3 +18,22 @@ export function useOnline(): boolean {
     () => online,
   )
 }
+
+// Time of the last successful Solana check, shown on the Waiting screen ("Checked hh:mm:ss").
+let lastCheck = 0
+const checkSubs = new Set<() => void>()
+
+export function markChecked() {
+  lastCheck = Date.now()
+  checkSubs.forEach((f) => f())
+}
+
+export function useLastCheck(): number {
+  return useSyncExternalStore(
+    (f) => {
+      checkSubs.add(f)
+      return () => checkSubs.delete(f)
+    },
+    () => lastCheck,
+  )
+}

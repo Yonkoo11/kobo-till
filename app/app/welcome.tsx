@@ -1,11 +1,11 @@
 import { isAddress } from '@solana/kit'
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { TextInput, View } from 'react-native'
+import { StyleSheet, Text, TextInput, View } from 'react-native'
 import { useMobileWallet } from '@wallet-ui/react-native-kit'
 import { useStore } from '@/state/store'
 import { copy } from '@/ui/copy'
-import { Banner, Body, Button, Screen, Title } from '@/ui/kit'
+import { Banner, Body, Button, Line, Meta, Screen, Slip, Title } from '@/ui/kit'
 import { t } from '@/ui/theme'
 
 export default function Welcome() {
@@ -34,16 +34,22 @@ export default function Welcome() {
   }
 
   return (
-    <Screen style={{ justifyContent: 'center' }}>
-      <Title style={{ fontSize: 40 }}>{copy.appName}</Title>
+    <Screen>
+      <Text style={s.name}>{copy.appName}</Text>
       <Title>{copy.welcomeTitle}</Title>
       <Body muted>{copy.welcomeBody}</Body>
+      <Slip style={s.example}>
+        <Meta>{copy.example}</Meta>
+        <Title>{copy.paidTitle('2,000')}</Title>
+        <Line label={copy.receiptReceived} value="1.51 USDC" last />
+      </Slip>
+      <View style={{ flex: 1 }} />
       {error ? <Banner text={error} tone="danger" /> : null}
       <Button title={busy ? copy.connecting : copy.connect} onPress={onConnect} busy={busy} />
       {!viewOnly ? (
         <Button title={copy.viewOnly} kind="link" onPress={() => setViewOnly(true)} />
       ) : (
-        <View style={{ gap: t.space(1) }}>
+        <View style={{ gap: t.space(2) }}>
           <Banner text={copy.viewOnlyBanner} tone="info" />
           <TextInput
             value={typed}
@@ -51,7 +57,8 @@ export default function Welcome() {
             autoCapitalize="none"
             autoCorrect={false}
             placeholder={copy.addressPlaceholder}
-            style={{ borderWidth: 1, borderColor: t.line, borderRadius: t.radius, padding: t.space(1.5), fontSize: t.font.body, backgroundColor: t.surface }}
+            placeholderTextColor={t.ink3}
+            style={s.input}
           />
           <Button title={copy.save} kind="secondary" onPress={onViewOnly} disabled={!isAddress(typed.trim())} />
         </View>
@@ -63,3 +70,9 @@ export default function Welcome() {
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))])
 }
+
+const s = StyleSheet.create({
+  name: { ...t.size.amount, fontFamily: t.font.medium, color: t.ink1 },
+  example: { transform: [{ scale: 0.9 }] },
+  input: { ...t.size.body, fontFamily: t.font.regular, color: t.ink1, borderWidth: 1, borderColor: t.rule, borderRadius: t.radius.control, padding: t.space(3), backgroundColor: t.slip },
+})

@@ -8,7 +8,7 @@ import { useStore } from '@/state/store'
 import { StoredSale } from '@/state/types'
 import { copy } from '@/ui/copy'
 import { coins, hhmm, naira, short, usd } from '@/ui/format'
-import { Body, Button, Screen, Title } from '@/ui/kit'
+import { Body, Button, Meta, Screen, Slip, Title } from '@/ui/kit'
 import { t } from '@/ui/theme'
 
 const PAIDISH = ['paid', 'overpaid', 'underpaid']
@@ -24,17 +24,27 @@ export default function Today() {
   const nairaTotal = paid.reduce((n, s) => n + s.naira, 0)
   const usdTotal = paid.reduce((n, s) => n + BigInt(s.received ?? '0'), 0n)
 
+  const owed = new Set(sales.filter((x) => x.reward === 'pending').map((x) => x.sgtMint)).size
   return (
     <Screen>
-      <Title>{copy.todayTotals(naira(nairaTotal), usd(usdTotal))}</Title>
-      <Body muted>{balance.isError ? copy.balanceOffline : balance.data !== undefined ? copy.yourDollars(usd(balance.data)) : '…'}</Body>
-      <FlatList
-        data={sales}
-        keyExtractor={(s) => s.id}
-        ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: t.line }} />}
-        ListEmptyComponent={<Body muted style={{ paddingVertical: t.space(4) }}>{copy.todayEmpty}</Body>}
-        renderItem={({ item }) => <Row sale={item} />}
-      />
+      <Slip>
+        <Title>{copy.todayTotals(naira(nairaTotal), usd(usdTotal))}</Title>
+        <Meta>{balance.isError ? copy.balanceOffline : balance.data !== undefined ? copy.yourDollars(usd(balance.data)) : '…'}</Meta>
+        {owed > 0 ? <Meta>{copy.todayRewardsOwed(owed)}</Meta> : null}
+      </Slip>
+      {sales.length === 0 ? (
+        <Body muted>{copy.todayEmpty}</Body>
+      ) : (
+        <Slip style={{ flexShrink: 1 }}>
+          <FlatList
+            data={sales}
+            keyExtractor={(x) => x.id}
+            ItemSeparatorComponent={() => <View style={s.rule} />}
+            renderItem={({ item }) => <Row sale={item} />}
+          />
+        </Slip>
+      )}
+      <View style={{ flex: 1 }} />
       <Button title={copy.closeDay} onPress={() => router.push('/close')} disabled={paid.length === 0} />
     </Screen>
   )
@@ -58,8 +68,9 @@ function Row({ sale }: { sale: StoredSale }) {
 }
 
 const s = StyleSheet.create({
-  row: { flexDirection: 'row', gap: t.space(2), paddingVertical: t.space(1.5), minHeight: t.tap, alignItems: 'center' },
-  time: { fontSize: t.font.small, color: t.muted, width: 48, fontVariant: ['tabular-nums'] },
-  main: { fontSize: t.font.body, color: t.ink, fontWeight: '600', fontVariant: ['tabular-nums'] },
-  sub: { fontSize: t.font.small, color: t.muted },
+  row: { flexDirection: 'row', gap: t.space(4), paddingVertical: t.space(3), minHeight: t.tap, alignItems: 'center' },
+  rule: { borderBottomWidth: 1, borderStyle: 'dashed', borderColor: t.rule },
+  time: { ...t.size.meta, fontFamily: t.font.regular, color: t.ink2, width: 48, fontVariant: ['tabular-nums'] },
+  main: { ...t.size.coin, fontFamily: t.font.medium, color: t.ink1, fontVariant: ['tabular-nums'] },
+  sub: { ...t.size.meta, fontFamily: t.font.regular, color: t.ink2 },
 })

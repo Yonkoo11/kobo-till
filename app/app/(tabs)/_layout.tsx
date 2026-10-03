@@ -7,8 +7,10 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: t.accent,
-        tabBarStyle: { backgroundColor: t.surface, borderTopColor: t.line, height: 64 },
-        tabBarLabelStyle: { fontSize: 14, fontWeight: '600' },
+        tabBarInactiveTintColor: t.ink2,
+        tabBarStyle: { backgroundColor: t.slip, borderTopColor: t.rule, height: 64 },
+        tabBarLabelStyle: { ...t.size.meta, fontFamily: t.font.semibold },
+        sceneStyle: { backgroundColor: t.ground },
         tabBarIconStyle: { display: 'none' },
       }}
     >

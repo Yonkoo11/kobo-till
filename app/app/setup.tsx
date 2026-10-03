@@ -1,10 +1,10 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
 import { useStore } from '@/state/store'
 import { Shop } from '@/state/types'
 import { copy } from '@/ui/copy'
-import { Body, Button, Screen, Title } from '@/ui/kit'
+import { Body, Button, Meta, Screen, Slip, Title } from '@/ui/kit'
 import { t } from '@/ui/theme'
 
 const DEFAULT: Shop = { name: '', accept: { USDC: true, USDT: true }, rewardPct: 2, adjustPct: 0 }
@@ -25,22 +25,26 @@ export default function Setup() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={{ gap: t.space(2) }}>
+      <ScrollView contentContainerStyle={{ gap: t.space(4) }}>
         <Title>{copy.setupTitle}</Title>
-        <Body>{copy.shopNameLabel}</Body>
+        <Slip>
+          <Text style={[s.header, !shop.name.trim() && { color: t.ink3 }]} numberOfLines={1}>{shop.name.trim() || copy.shopNamePlaceholder}</Text>
+        </Slip>
+        <Meta>{copy.shopNameLabel}</Meta>
         <TextInput
           value={shop.name}
           onChangeText={(name) => setShop({ ...shop, name })}
           placeholder={copy.shopNamePlaceholder}
+          placeholderTextColor={t.ink3}
           maxLength={40}
-          style={{ borderWidth: 1, borderColor: t.line, borderRadius: t.radius, padding: t.space(1.5), fontSize: t.font.body, backgroundColor: t.surface }}
+          style={s.input}
         />
         {touched && !nameOk ? <Body style={{ color: t.danger }}>{copy.shopNameError}</Body> : null}
-        <Body>{copy.acceptLabel}</Body>
+        <Meta>{copy.acceptLabel}</Meta>
         {(['USDC', 'USDT'] as const).map((c) => (
           <View key={c} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', minHeight: t.tap }}>
             <Body>{c}</Body>
-            <Switch value={shop.accept[c]} onValueChange={(v) => setShop({ ...shop, accept: { ...shop.accept, [c]: v } })} />
+            <Switch trackColor={{ true: t.accent, false: t.rule }} thumbColor={t.slip} value={shop.accept[c]} onValueChange={(v) => setShop({ ...shop, accept: { ...shop.accept, [c]: v } })} />
           </View>
         ))}
         {!coinsOk ? <Body style={{ color: t.danger }}>{copy.coinsOffError}</Body> : null}
@@ -59,9 +63,9 @@ function Stepper(p: { label: string; value: number; min: number; max: number; si
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       <Body style={{ flex: 1 }}>{p.label}</Body>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: t.space(1) }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: t.space(2) }}>
         <Round label="−" onPress={() => step(-0.5)} />
-        <Text style={{ fontSize: t.font.body, width: 56, textAlign: 'center', fontVariant: ['tabular-nums'] }}>{shown}</Text>
+        <Text style={s.stepValue}>{shown}</Text>
         <Round label="+" onPress={() => step(0.5)} />
       </View>
     </View>
@@ -70,8 +74,16 @@ function Stepper(p: { label: string; value: number; min: number; max: number; si
 
 function Round({ label, onPress }: { label: string; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" style={{ width: t.tap, height: t.tap, borderRadius: t.tap / 2, borderWidth: 1, borderColor: t.line, alignItems: 'center', justifyContent: 'center', backgroundColor: t.surface }}>
-      <Text style={{ fontSize: 22 }}>{label}</Text>
+    <Pressable onPress={onPress} accessibilityRole="button" style={s.round}>
+      <Text style={s.roundText}>{label}</Text>
     </Pressable>
   )
 }
+
+const s = StyleSheet.create({
+  header: { ...t.size.coin, fontFamily: t.font.medium, color: t.ink1, textAlign: 'center' },
+  input: { ...t.size.body, fontFamily: t.font.regular, color: t.ink1, borderWidth: 1, borderColor: t.rule, borderRadius: t.radius.control, padding: t.space(3), backgroundColor: t.slip },
+  stepValue: { ...t.size.body, fontFamily: t.font.medium, color: t.ink1, width: 56, textAlign: 'center', fontVariant: ['tabular-nums'] },
+  round: { width: t.tap, height: t.tap, borderRadius: t.radius.chip, borderWidth: 1, borderColor: t.rule, alignItems: 'center', justifyContent: 'center', backgroundColor: t.slip },
+  roundText: { ...t.size.coin, fontFamily: t.font.medium, color: t.ink1 },
+})
