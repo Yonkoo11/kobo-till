@@ -44,7 +44,7 @@ function WaitingView({ sale, onCancel, twins }: { sale: StoredSale; onCancel: ()
   const long = now - sale.createdAt > TIMING.stillWaitingMs
   return (
     <Screen>
-      <Slip style={{ alignItems: 'center' }}>
+      <Slip contentStyle={{ alignItems: 'center' }}>
         <Meta>{sale.label}</Meta>
         <View style={s.qr}>
           <QRCode value={saleUrl(toSale(sale))} size={size - 32} quietZone={0} />

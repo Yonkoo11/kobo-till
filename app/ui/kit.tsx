@@ -23,11 +23,11 @@ export function Meta(p: TextProps) {
 }
 
 /** The signature device: a strip of till paper with a torn zigzag bottom edge. Only money moments use it. */
-export function Slip({ children, style }: PropsWithChildren<{ style?: ViewStyle }>) {
+export function Slip({ children, style, contentStyle }: PropsWithChildren<{ style?: ViewStyle; contentStyle?: ViewStyle }>) {
   const [w, setW] = useState(0)
   return (
     <View style={[s.slipWrap, style]} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
-      <View style={s.slip}>{children}</View>
+      <View style={[s.slip, contentStyle]}>{children}</View>
       {w > 0 ? <Zigzag width={w} /> : null}
     </View>
   )

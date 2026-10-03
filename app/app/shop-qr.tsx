@@ -32,7 +32,7 @@ export default function ShopQr() {
   return (
     <Screen>
       <Meta>{copy.shopQrTitle}</Meta>
-      <Slip style={{ alignItems: 'center' }}>
+      <Slip contentStyle={{ alignItems: 'center' }}>
         <Title>{data.shop?.name}</Title>
         <View style={{ padding: t.space(4) }}>
           <QRCode value={url} size={Math.min(width - 96, 320)} getRef={(r) => (ref.current = r as never)} />
