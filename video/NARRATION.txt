@@ -1,0 +1,17 @@
+This is a shopkeeper getting paid thirty thousand naira in digital dollars. The customer scanned, the receipt printed. That's Kobo.
+
+Shops in Nigeria that want dollars take them the hard way today: a wallet address pasted into WhatsApp. No amount, no confirmation, no receipt.
+
+Kobo is a till. You type the price in naira, like you always have. It pulls today's rate and works out the USDC itself.
+
+The customer scans with any Solana wallet. The rate is locked the moment the QR appears, so nobody argues about it later.
+
+Kobo watches Solana for that exact payment, and prints the receipt. Share it to WhatsApp, with a link anyone can check on Solscan.
+
+Kobo never touches the money. It goes straight to the shop's own wallet, and every receipt links to the payment on chain.
+
+At the end of the day, the shop sees every sale and closes the day. Customers paying from a Seeker phone are spotted by their Genesis Token, and lined up for an SKR reward.
+
+It connects through Mobile Wallet Adapter, so the shop's own wallet signs everything.
+
+Kobo. Get paid in digital dollars. Open source, built for Clock In.
