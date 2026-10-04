@@ -54,3 +54,9 @@ probe/.devnet.json
 probe/.localnet.json
 probe/.localnet*.json
 design/measure/
+
+# Demo video working files (large recordings, renders, rehearsal state)
+.demo-rehearsal-state.json
+video/out/
+video/public/video/
+video/public/audio/
