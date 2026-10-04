@@ -1,5 +1,5 @@
 import { address } from '@solana/kit'
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { TIMING } from '@/constants/app-config'
 import { findSale, SaleStatus } from '@/core/detect'
 import { findByAmount } from '@/core/match-amount'
@@ -15,7 +15,9 @@ export function SaleWatcher() {
   const rpc = useRpc()
   const { data, patchSale } = useStore()
   const latest = useRef(data)
-  latest.current = data
+  useLayoutEffect(() => {
+    latest.current = data
+  })
   const lastSlow = useRef(0)
 
   useEffect(() => {

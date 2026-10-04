@@ -1,4 +1,4 @@
-import { PropsWithChildren, useEffect, useRef, useState } from 'react'
+import { PropsWithChildren, useEffect, useState } from 'react'
 import { AccessibilityInfo, ActivityIndicator, Animated, Pressable, StyleSheet, Text, TextProps, View, ViewStyle } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Svg, { Path } from 'react-native-svg'
@@ -68,7 +68,7 @@ export function useReducedMotion(): boolean {
 /** The one entrance: the Paid receipt prints down once. A cut when reduced motion is on. */
 export function Print({ children }: PropsWithChildren) {
   const reduced = useReducedMotion()
-  const p = useRef(new Animated.Value(0)).current
+  const [p] = useState(() => new Animated.Value(0))
   useEffect(() => {
     Animated.timing(p, { toValue: 1, duration: reduced ? 0 : t.motion.printMs, easing: t.motion.ease, useNativeDriver: true }).start()
   }, [p, reduced])
@@ -79,7 +79,7 @@ export function Print({ children }: PropsWithChildren) {
 /** chain-check: the dot lights on each real Solana check; the time is always written beside it. */
 export function ChainCheck({ at, text }: { at: number; text: string }) {
   const reduced = useReducedMotion()
-  const v = useRef(new Animated.Value(1)).current
+  const [v] = useState(() => new Animated.Value(1))
   useEffect(() => {
     if (reduced || !at) return
     v.setValue(1)

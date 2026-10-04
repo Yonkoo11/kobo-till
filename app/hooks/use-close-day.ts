@@ -59,6 +59,21 @@ export function useSendRewards(shop: string | null, shopName: string) {
   const { signAndSendTransactions, sendTransactions } = useMobileWallet()
   const { data, update } = useStore()
   const [step, setStep] = useState<CloseStep>('idle')
+  const payLines = async (saved: SavedSwap) => {
+    const parts = splitSkr(saved.lines.map((l) => ({ usd: BigInt(l.usd) })), BigInt(saved.minOut))
+    const done = paidKeys(data)
+    const todo = saved.lines.map((l, i) => ({ l, amount: parts[i] })).filter((x) => !done.has(x.l.key) && x.amount > 0n)
+    for (let i = 0; i < todo.length; i += MAX_TRANSFERS_PER_TX) {
+      const batch = todo.slice(i, i + MAX_TRANSFERS_PER_TX)
+      const ix = []
+      for (const { l, amount } of batch) {
+        ix.push(...(await transferIx({ from: address(shop!), to: address(l.payer), mint: SKR.mint, decimals: SKR.decimals, amount, createTo: false })))
+      }
+      const { getAddMemoInstruction } = await import('@solana-program/memo')
+      const sig = await sendTransactions([...ix, getAddMemoInstruction({ memo: `Kobo reward from ${shopName}` })])
+      markSent(update, batch.map((b) => b.l), sig)
+    }
+  }
   const send = useCallback(
     async (eligible: CheckedLine[]) => {
       let saved = data.rewardSwap
@@ -82,22 +97,6 @@ export function useSendRewards(shop: string | null, shopName: string) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [rpc, shop, shopName, data.rewardSwap, signAndSendTransactions, sendTransactions, update],
   )
-
-  const payLines = async (saved: SavedSwap) => {
-    const parts = splitSkr(saved.lines.map((l) => ({ usd: BigInt(l.usd) })), BigInt(saved.minOut))
-    const done = paidKeys(data)
-    const todo = saved.lines.map((l, i) => ({ l, amount: parts[i] })).filter((x) => !done.has(x.l.key) && x.amount > 0n)
-    for (let i = 0; i < todo.length; i += MAX_TRANSFERS_PER_TX) {
-      const batch = todo.slice(i, i + MAX_TRANSFERS_PER_TX)
-      const ix = []
-      for (const { l, amount } of batch) {
-        ix.push(...(await transferIx({ from: address(shop!), to: address(l.payer), mint: SKR.mint, decimals: SKR.decimals, amount, createTo: false })))
-      }
-      const { getAddMemoInstruction } = await import('@solana-program/memo')
-      const sig = await sendTransactions([...ix, getAddMemoInstruction({ memo: `Kobo reward from ${shopName}` })])
-      markSent(update, batch.map((b) => b.l), sig)
-    }
-  }
   return { step, setStep, send, resuming: !!data.rewardSwap }
 }
 

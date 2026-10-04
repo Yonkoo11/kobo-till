@@ -3,6 +3,7 @@ import { address } from '@solana/kit'
 import { createSale, formatCoins, nairaToBaseUnits, newReference, saleUrl } from './sale'
 import { balanceDelta, classify, findPayer } from './detect'
 import { adjusted } from './rate'
+import { lagosDay, rewardKey, rewardLines, saleRewardUsd, splitSkr } from './rewards'
 
 const SHOP = address('9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM')
 const USDC = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
@@ -70,7 +71,6 @@ describe('adjusted', () => {
   })
 })
 
-import { lagosDay, rewardKey, rewardLines, saleRewardUsd, splitSkr } from './rewards'
 describe('rewards', () => {
   const day = '2026-10-02'
   const base = { status: 'paid', day, reward: 'pending', expected: 10_000_000n }
