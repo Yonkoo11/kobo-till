@@ -10,7 +10,7 @@ size. Nothing is upscaled.
 | File | Size | Use |
 |---|---|---|
 | icon.png / icon.svg | 1024 | app icon (app.json `icon`), store listing |
-| android-icon-foreground.png | 1024 | adaptive icon foreground; art scaled to 0.72 so it stays inside the centre-66% safe zone |
+| android-icon-foreground.png | 1024 | adaptive icon foreground; art scaled to 0.66 so it stays inside the centre-66% safe zone (0.72 touched the circle top on the Pixel launcher) |
 | android-icon-background.png | 1024 | adaptive icon background, solid #00774A |
 | android-icon-monochrome.png | 1024 | Android themed icon, white silhouette on transparent |
 | splash-icon.png | 1024 | splash, shown at 200 px on the ground #ECEEEB |

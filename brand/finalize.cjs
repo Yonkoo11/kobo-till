@@ -27,8 +27,9 @@ const art = (slipFill, barFill, withShadow) =>
   (withShadow ? `<path d="${d}" fill="rgba(0,0,0,0.18)" transform="translate(0,10)"/>` : '') +
   `<path d="${d}" fill="${slipFill}"/>`
 const svg = (inner, bg) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">${bg ? `<rect width="1024" height="1024" fill="${bg}"/>` : ''}${inner}</svg>`
-// Adaptive foreground: the launcher shows the centre 66%, so the art is scaled to 0.72 about the centre.
-const safe = (inner) => `<g transform="translate(512,512) scale(0.72) translate(-512,-512)">${inner}</g>`
+// Adaptive foreground: the launcher shows the centre 66%, so the art is scaled to 0.66 about the centre
+// (0.72 let the ink bar touch the top of the circle mask on the Pixel launcher, seen on kobo35 2026-10-04).
+const safe = (inner) => `<g transform="translate(512,512) scale(0.66) translate(-512,-512)">${inner}</g>`
 
 const files = {
   'icon.svg': svg(art(SLIP, INK, true), G),
