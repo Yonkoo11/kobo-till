@@ -63,7 +63,7 @@ export async function findSale(rpc: Rpc<SolanaRpcApi>, sale: Sale, ex: Exclusion
 
 async function checkSignature(rpc: Rpc<SolanaRpcApi>, sale: Sale, signature: Signature, otherRefs: Set<string>) {
   const tx = await rpc
-    .getTransaction(signature, { commitment: 'confirmed', encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 })
+    .getTransaction(signature, { commitment: 'confirmed', encoding: 'jsonParsed', maxSupportedTransactionVersion: 1 })
     .send()
   if (!tx?.meta || tx.meta.err) return null
   const keys = (tx.transaction.message.accountKeys as unknown as { pubkey: Address }[]).map((k) => String(k.pubkey))

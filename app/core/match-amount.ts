@@ -16,7 +16,7 @@ export async function findByAmount(rpc: Rpc<SolanaRpcApi>, sale: Sale, usedSigna
   const since = Math.floor(sale.createdAt / 1000) - 5
   for (const s of sigs.filter((x) => !x.err && !usedSignatures.has(x.signature) && Number(x.blockTime ?? 0) >= since).reverse()) {
     const tx = await rpc
-      .getTransaction(s.signature, { commitment: 'confirmed', encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 })
+      .getTransaction(s.signature, { commitment: 'confirmed', encoding: 'jsonParsed', maxSupportedTransactionVersion: 1 })
       .send()
     const pre = (tx?.meta?.preTokenBalances ?? []) as never[]
     const post = (tx?.meta?.postTokenBalances ?? []) as never[]

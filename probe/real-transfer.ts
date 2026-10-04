@@ -8,7 +8,7 @@ import { RPC_URL } from './_args'
 const rpc = createSolanaRpc(RPC_URL)
 const sigs = await rpc.getSignaturesForAddress(COINS.USDC.mint, { limit: 25 }).send()
 for (const s of sigs.filter((x) => !x.err)) {
-  const tx = await rpc.getTransaction(s.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }).send()
+  const tx = await rpc.getTransaction(s.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 1 }).send()
   const pre = (tx?.meta?.preTokenBalances ?? []) as any[]
   const post = (tx?.meta?.postTokenBalances ?? []) as any[]
   const owners = [...new Set(post.filter((b) => b.mint === COINS.USDC.mint).map((b) => b.owner))]

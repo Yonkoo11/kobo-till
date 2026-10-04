@@ -17,7 +17,7 @@ export async function findPriorRefund(
   const sigs = await rpc.getSignaturesForAddress(account, { commitment: 'confirmed', limit: 25 }).send()
   for (const s of sigs.filter((x) => !x.err && Number(x.blockTime ?? 0) * 1000 >= sinceMs)) {
     const tx = await rpc
-      .getTransaction(s.signature, { commitment: 'confirmed', encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 })
+      .getTransaction(s.signature, { commitment: 'confirmed', encoding: 'jsonParsed', maxSupportedTransactionVersion: 1 })
       .send()
     const pre = (tx?.meta?.preTokenBalances ?? []) as never[]
     const post = (tx?.meta?.postTokenBalances ?? []) as never[]
