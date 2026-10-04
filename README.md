@@ -85,12 +85,14 @@ $T probe/sgt.ts --owner 9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM
 
 # 3. The app's payment reading on a real recent USDC transfer on mainnet (a different one each run)
 $T probe/real-transfer.ts
-# → recipient <address> received 0.18 USDC from <address>
+# → recipient <address> received <amount> USDC from <address>
 #   as a sale expecting that amount: PAID; expecting +0.01: UNDERPAID
+#   (or "no simple two-party USDC transfer in the last 25 signatures; rerun": run it again)
 
 # 4. A version 1 transaction (new on mainnet) loads without error
 $T probe/v1-check.ts
 # → version 1 sig <signature>
+#   <address> received <amount> USDC   (or "no USDC receiver in this one")
 ```
 
 What this proves: the sale maths, the Solana Pay link, the Seeker check and the payment reading are the app's own code (`app/core/`), and they give the right answers on real mainnet data. What it does not prove: that a phone wallet like Phantom pays a Kobo QR correctly. That needs two real phones and is the next test (see the table below). The public Solana network limits how often you can ask; if a check answers `HTTP error (429)`, wait a minute and run it again.
@@ -135,7 +137,7 @@ All money logic lives in `app/core/` and has no screen code in it, which is why 
 | **Naira price to USDC QR** | Real. Unit tests plus the mainnet check above; QR on the emulator decoded to the expected Solana Pay link. |
 | **Paid detection** | Real on a local Solana network: test payment to Paid on screen in 5 seconds on an emulator. Underpaid, dust-then-paid and two part payments were also run there. |
 | **Reading real mainnet payments** | Real. The app's code read a real USDC transfer on mainnet as PAID, and as UNDERPAID when one cent more was expected. |
-| **Version 1 transactions** | Fixed on 2026-10-04 after the mainnet check above failed on one. Before that, a payment sent as a version 1 transaction would have stayed on Waiting. |
+| **Version 1 transactions** | Fixed on 2026-10-04 after the mainnet check above failed on one. Before that, a payment sent as a version 1 transaction would have stayed on Waiting. After the fix, the app's code read a real version 1 mainnet transaction: 0.19999 USDC received. |
 | **Seeker phone check** | Real on mainnet against the Solana Mobile docs' example owner. |
 | A real phone paying a Kobo QR on mainnet | Not done yet. Needs two real phones; it is the next test. Until then we don't claim Phantom, Solflare or the Seeker wallet pay a Kobo QR correctly. |
 | Refund and Seeker rewards signed by a real wallet | Not done. The refund maths and the double-refund check ran on the local network; signing with a real wallet needs the real-phone test. |
