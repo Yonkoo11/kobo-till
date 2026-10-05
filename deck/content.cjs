@@ -83,6 +83,7 @@ const slides = [
       ['Seeker phone check', 'Real on mainnet against the Solana Mobile docs\' example owner.'],
       ['A real wallet paying a Kobo QR on mainnet', 'Done twice with Phantom (2026-10-05): ₦150 = 0.12 USDC each, Paid within seconds. Phantom dropped the coin and reference from the link; Kobo matched by amount.'],
       ['Refund and SKR reward signed by a real wallet', 'Not yet. The maths ran on the local network; signing needs the wallet test.'],
+      ['A physical Android phone', 'Not yet. Every run so far is on Android emulators with Google Play.'],
       ['Tap to pay (NFC)', 'Not built.'],
       ['A customer with USDC on Solana', 'Not assumed. MiniPay, Africa\'s biggest stablecoin wallet, is on Celo. Kobo needs Phantom, Solflare or the Seeker wallet.'],
     ],
