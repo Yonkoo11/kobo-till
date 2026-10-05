@@ -59,8 +59,8 @@ A till on the shopkeeper's Android phone that watches Solana for each sale. The 
 </div>
 
 1. **Type price.** The shopkeeper types naira. Kobo fetches the naira rate from two public sources (open.er-api.com and CoinGecko), applies the shop's own adjustment and works out the USDC amount, rounded up to the cent.
-2. **Show QR.** Kobo makes a Solana Pay link with the amount, the USDC coin and a fresh one-time reference key for this sale, and shows it as a QR. Any Solana wallet can scan it.
-3. **See Paid.** Kobo asks Solana for transactions that carry that reference, reads how much USDC the shop's account actually gained, and shows Paid, Underpaid or Overpaid. The money goes straight to the shop's own wallet; Kobo never holds it.
+2. **Show QR.** Kobo makes a Solana Pay link with the amount, the USDC coin and a fresh one-time reference key for this sale, and shows it as a QR for the customer's Solana wallet. Phantom is the only wallet tested so far.
+3. **See Paid.** Kobo asks Solana for transactions that carry that reference, reads how much USDC the shop's account actually gained, and shows Paid, Underpaid or Overpaid. Some wallets drop the reference (Phantom did in both real payments so far); then Kobo looks for a payment of exactly the sale's amount and coin into the shop's account after the sale started, and marks the receipt "matched by amount". It never does this while two open sales share the same amount. The money goes straight to the shop's own wallet; Kobo never holds it.
 4. **Close the day.** Today lists every sale. At close, customers who paid from a Seeker phone can be sent a small SKR reward in one batch, signed by the shop's wallet.
 
 ## Verify it yourself in 3 minutes
@@ -125,6 +125,7 @@ All money logic lives in `app/core/` and has no screen code in it, which is why 
 | Step | Function | Rule |
 |---|---|---|
 | Find the payment | `findSale` (`core/detect.ts`) | Transactions that carry this sale's one-time reference. A transaction carrying another sale's reference is refused, and a signature already counted for one sale is never counted again. |
+| No reference in the payment | `findByAmount` (`core/match-amount.ts`) | Fallback for wallets that drop the reference: a payment of exactly the expected amount of the sale's coin into the shop's account, made after the sale started, not already counted. Skipped while two open sales share coin and amount. The receipt says "matched by amount". |
 | Measure it | `balanceDelta` | What the shop's USDC account gained in that transaction, from the balances before and after. What the sender says is ignored. |
 | Small amounts | `DUST` | Under 0.01 USDC is ignored. Several part payments for one sale are added up. |
 | Decide | `classify` | Exact is Paid, short is Underpaid (the screen says how much is missing), more is Overpaid. |

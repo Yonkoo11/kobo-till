@@ -26,7 +26,7 @@ export const copy = {
   tillRateDisagree: (rate: string) => `Rate sources disagree. Using ₦${rate}. Tap to change.`,
   charge: 'Charge',
   waitingLine: 'Waiting for payment…',
-  waitingScanHint: 'Scan with any Solana wallet',
+  waitingScanHint: 'Scan with your Solana wallet',
   waitingLong: (hhmm: string) => `Still waiting. The rate is locked from ${hhmm}.`,
   waitingOffline: "No internet. The payment will still arrive; Kobo will confirm it when you're back online.",
   cancel: 'Cancel',
