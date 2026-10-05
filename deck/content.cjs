@@ -81,7 +81,7 @@ const slides = [
       ['Paid detection', 'Real on a local Solana network: payment to Paid on screen in 5 seconds. Underpaid and part payments also run.'],
       ['Reading real mainnet payments', 'Real. The app\'s code read a real USDC transfer on mainnet, including a version 1 transaction.'],
       ['Seeker phone check', 'Real on mainnet against the Solana Mobile docs\' example owner.'],
-      ['A real wallet paying a Kobo QR on mainnet', 'Not yet. The next test, with Phantom. Until then we do not claim it.'],
+      ['A real wallet paying a Kobo QR on mainnet', 'Done once with Phantom (2026-10-05): ₦150, 0.12 USDC, Paid in five seconds. Phantom dropped the coin and reference from the link; Kobo matched by amount.'],
       ['Refund and SKR reward signed by a real wallet', 'Not yet. The maths ran on the local network; signing needs the wallet test.'],
       ['Tap to pay (NFC)', 'Not built.'],
       ['A customer with USDC on Solana', 'Not assumed. MiniPay, Africa\'s biggest stablecoin wallet, is on Celo. Kobo needs Phantom, Solflare or the Seeker wallet.'],
