@@ -20,7 +20,14 @@ export default function Welcome() {
     setBusy(true)
     setError(null)
     try {
-      await withTimeout(connect(), 30000)
+      try {
+        await withTimeout(connect(), 30000)
+      } catch (first) {
+        // Seen on a real phone 2026-10-05: a wallet that is still starting answers "cancelled" once.
+        if (!/cancel/i.test(String(first))) throw first
+        await new Promise((r) => setTimeout(r, 1500))
+        await withTimeout(connect(), 30000)
+      }
       router.replace(data.shop ? '/(tabs)' : '/setup')
     } catch (e) {
       setError(/no.*wallet|not found|ActivityNotFound/i.test(String(e)) ? copy.noWallet : copy.connectError)

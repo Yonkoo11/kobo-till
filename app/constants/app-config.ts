@@ -9,7 +9,9 @@ export const MAINNET_RPC = process.env.EXPO_PUBLIC_KOBO_RPC_URL || PUBLIC_RPC
 export const USING_PUBLIC_RPC = MAINNET_RPC === PUBLIC_RPC
 
 export class AppConfig {
-  static identity: AppIdentity = { name: 'Kobo' }
+  // The wallet shows "identity could not be verified" until this site serves .well-known/assetlinks.json
+  // for the app's signing key (seen on Phantom 2026-10-05). Publish step: GitHub Pages for the repo.
+  static identity: AppIdentity = { name: 'Kobo', uri: 'https://yonkoo11.github.io/kobo-till', icon: 'favicon.png' }
   static networks: SolanaCluster[] = [
     ...(TEST_RPC ? [createSolanaLocalnet({ url: TEST_RPC })] : []),
     createSolanaMainnet({ url: MAINNET_RPC }),
