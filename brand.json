@@ -1,0 +1,16 @@
+{
+  "name": "Kobo",
+  "tagline": "Get paid in digital dollars.",
+  "colorMode": "light-only",
+  "brandColor": "#00774A",
+  "accent": "#00774A",
+  "ground": "#ECEEEB",
+  "surface": "#FFFFFF",
+  "ink": ["#151714", "rgba(21,23,20,0.62)", "rgba(21,23,20,0.38)"],
+  "semantic": { "success": "#00774A", "warning": "#8A5300", "danger": "#B3261E" },
+  "fonts": { "display": "Familjen Grotesk", "body": "Familjen Grotesk", "mono": "" },
+  "radii": { "sm": 4, "md": 12, "lg": 999 },
+  "shadowPhilosophy": "soft-elevation",
+  "signatureElement": "receipt slip with a zigzag torn bottom edge (12 px teeth, 6 px deep)",
+  "logoPath": "brand/final/icon.svg"
+}
