@@ -68,6 +68,7 @@ const slides = [
       'Solana Mobile asked for an Android-first crypto point of sale and for Scan and Pay for merchants on superteam.fun (both posted 2025-10-14).',
       'First shops: phone, electronics and fashion sellers who already pay overseas suppliers in USDT or USDC, and vendors at Superteam Nigeria events.',
       'Stablecoins were 43% of Sub-Saharan Africa\'s crypto volume (Chainalysis, October 2024). How many shops want dollars at the counter is the open question; ten in-person conversations are being logged.',
+      'Nobody sells this yet: Solana\'s own point-of-sale example was retired in March 2026, and the Nigerian options that exist (StableFlow, Quidax) hold the money and settle naira to a bank. Kobo holds nothing.',
     ],
     images: ['assets/welcome.png'],
   },
@@ -83,6 +84,7 @@ const slides = [
       ['A real wallet paying a Kobo QR on mainnet', 'Not yet. The next test, with Phantom. Until then we do not claim it.'],
       ['Refund and SKR reward signed by a real wallet', 'Not yet. The maths ran on the local network; signing needs the wallet test.'],
       ['Tap to pay (NFC)', 'Not built.'],
+      ['A customer with USDC on Solana', 'Not assumed. MiniPay, Africa\'s biggest stablecoin wallet, is on Celo. Kobo needs Phantom, Solflare or the Seeker wallet.'],
     ],
   },
   {

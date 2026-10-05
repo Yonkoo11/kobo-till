@@ -146,6 +146,7 @@ All money logic lives in `app/core/` and has no screen code in it, which is why 
 | A Kobo-made exchange rate | Not claimed. Kobo shows public rates and the shop's own adjustment; it never sets a rate, holds money or converts it. |
 | Legal status in Nigeria | Not claimed. Whether non-custodial till software needs a licence under Nigeria's Investments and Securities Act 2025 is an open question for a lawyer. |
 | Shop demand | Not claimed yet. Conversations with shops are being logged; no numbers here until they exist. |
+| Customers with the right wallet | Not assumed. The stablecoin wallet with the biggest African footprint, MiniPay, runs on Celo, not Solana. A Kobo QR needs USDC on Solana: Phantom, Solflare or the Seeker wallet. |
 
 ## Tech stack
 - **App:** Expo 57, React Native 0.86, expo-router, TypeScript · **Wallet:** Mobile Wallet Adapter through `@wallet-ui/react-native-kit` · **Solana:** `@solana/kit` 7.1.1, Solana Pay transfer requests · **Tests:** 40 (Vitest), in CI · **Font:** Familjen Grotesk
