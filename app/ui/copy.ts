@@ -9,6 +9,7 @@ export const copy = {
   connectError: "Couldn't connect. Open your wallet app and try again.",
   noWallet: 'No Solana wallet found on this phone. Install Phantom or Solflare, then come back.',
   viewOnlyBanner: 'View only: connect a wallet to send rewards and refunds',
+  viewOnlyStaff: 'View only suits a staff phone: no wallet on it, and every payment still lands in your wallet. Rewards and refunds need your wallet connected.',
   setupTitle: 'Your shop',
   shopNameLabel: 'Shop name',
   shopNamePlaceholder: 'e.g. Mama Nkechi Provisions',

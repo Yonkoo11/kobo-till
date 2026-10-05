@@ -57,7 +57,7 @@ export default function Welcome() {
         <Button title={copy.viewOnly} kind="link" onPress={() => setViewOnly(true)} />
       ) : (
         <View style={{ gap: t.space(2) }}>
-          <Banner text={copy.viewOnlyBanner} tone="info" />
+          <Banner text={copy.viewOnlyStaff} tone="info" />
           <TextInput
             value={typed}
             onChangeText={setTyped}

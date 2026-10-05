@@ -1,3 +1,4 @@
+import { createAudioPlayer } from 'expo-audio'
 import * as Haptics from 'expo-haptics'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useRef } from 'react'
@@ -25,6 +26,7 @@ export default function Waiting() {
   useEffect(() => {
     if (was.current === 'waiting' && sale && sale.state !== 'waiting' && sale.state !== 'cancelled') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined)
+      if (sale.state === 'paid' || sale.state === 'overpaid') playPaidChime()
     }
     was.current = sale?.state
   }, [sale?.state, sale])
@@ -130,3 +132,15 @@ const s = StyleSheet.create({
   tick: { ...t.size.amount, fontFamily: t.font.medium, color: t.accent },
   badge: { ...t.size.meta, fontFamily: t.font.semibold, color: t.ink1, backgroundColor: t.accentSoft, borderRadius: t.radius.chip, paddingHorizontal: t.space(3), paddingVertical: t.space(1), alignSelf: 'flex-start', overflow: 'hidden' },
 })
+
+// A two-note till chime (app/assets/sounds/paid.wav, made with ffmpeg sine tones). Sound is a nicety:
+// a phone that cannot play it still shows Paid and buzzes.
+function playPaidChime() {
+  try {
+    const player = createAudioPlayer(require('@/assets/sounds/paid.wav'))
+    player.play()
+    setTimeout(() => player.remove(), 2000)
+  } catch {
+    // no audio on this device; the receipt and the haptic still fire
+  }
+}
