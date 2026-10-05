@@ -47,7 +47,7 @@ const slides = [
       'Every receipt links to the payment on Solscan. Share it to WhatsApp; anyone can check it.',
       'The rate line shows the source and the time it was locked, so nobody argues about it later.',
     ],
-    images: ['assets/paid.png', 'assets/share.png'],
+    images: ['assets/paid.png', 'assets/solscan.png'],
   },
   {
     id: 'mobile', kind: 'feature',
@@ -58,7 +58,7 @@ const slides = [
       'Seeker Genesis Token: a payer from a Seeker phone is spotted on chain and lined up for SKR back at the daily close. One reward per Genesis Token per shop per day.',
       'Solana Pay: one fresh reference key per sale, matched on chain, never by screenshot. If a wallet drops it, Kobo matches the exact amount and says so on the receipt.',
     ],
-    images: ['assets/authorize.png', 'assets/today.png'],
+    images: ['assets/today.png', 'assets/phantom-usdc.png'],
   },
   {
     id: 'who', kind: 'feature',
@@ -78,10 +78,10 @@ const slides = [
     title: 'What is real today, and what is not yet.',
     rows: [
       ['Naira price to a USDC Solana Pay QR', 'Real. Unit tests; the QR on the phone decodes to the expected link.'],
-      ['Paid detection', 'Real on a local Solana network: payment to Paid on screen in 5 seconds. Underpaid and part payments also run.'],
+      ['Paid detection', 'Real on mainnet: the receipt printed within seconds of the payment\'s block. Underpaid and part payments ran on a local network.'],
       ['Reading real mainnet payments', 'Real. The app\'s code read a real USDC transfer on mainnet, including a version 1 transaction.'],
       ['Seeker phone check', 'Real on mainnet against the Solana Mobile docs\' example owner.'],
-      ['A real wallet paying a Kobo QR on mainnet', 'Done once with Phantom (2026-10-05): ₦150, 0.12 USDC, Paid in five seconds. Phantom dropped the coin and reference from the link; Kobo matched by amount.'],
+      ['A real wallet paying a Kobo QR on mainnet', 'Done twice with Phantom (2026-10-05): ₦150 = 0.12 USDC each, Paid within seconds. Phantom dropped the coin and reference from the link; Kobo matched by amount.'],
       ['Refund and SKR reward signed by a real wallet', 'Not yet. The maths ran on the local network; signing needs the wallet test.'],
       ['Tap to pay (NFC)', 'Not built.'],
       ['A customer with USDC on Solana', 'Not assumed. MiniPay, Africa\'s biggest stablecoin wallet, is on Celo. Kobo needs Phantom, Solflare or the Seeker wallet.'],
