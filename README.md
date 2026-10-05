@@ -20,13 +20,13 @@ Built for Clock In (Solana Mobile x Radiants).
 
 ## ▶ Demo
 
-*Three screens from one test sale on an Android emulator, running the test build of Kobo against a local Solana network. The shop name is a test name.*
+*One real ₦150 sale on Solana mainnet, 2026-10-05, on two Android emulators with Google Play: Kobo on the shop phone, Phantom on the customer's ([transaction](https://solscan.io/tx/4rFCgZJoLApdchHC1rCFD9d9ypLXH9Dpyjy3LMZaHaVdjpRewa8uKETrzcBrzxu5RK5TrZsbnUX1p2VM2WWFRdBx)). The shop name is a test name.*
 
-| A ₦2,000 sale waiting: the QR asks for 1.51 USDC at a rate locked at 17:36, and "Checked 17:36:41" is the last time Kobo asked Solana | Five seconds after the customer's payment: the Paid receipt with amount received, payer, time, rate and a Solscan link | Today: two paid sales, ₦4,000 and $3.02 in total, with a Close the day button |
+| The sale waiting: ₦150 is 0.12 USDC at ₦1,329 per $1, locked at 19:37 | The customer opens the link in Phantom, which pre-fills 0.12 SOL; the payer switches the coin to USDC before sending | The Paid receipt: 0.12 USDC received from Hnsj…9Cf1 at 19:41, "Paid (matched by amount)" because Phantom left out the reference |
 |---|---|---|
-| ![Waiting screen with QR](docs/stills/waiting.png) | ![Paid receipt](docs/stills/paid.png) | ![Today list](docs/stills/today.png) |
+| ![Kobo waiting screen with the QR for ₦150](docs/stills/waiting.png) | ![Phantom review screen showing 0.12 SOL](docs/stills/phantom.png) | ![Kobo Paid receipt for ₦150](docs/stills/paid.png) |
 
-The demo video is not recorded yet.
+A 68-second demo video of this sale is rendered; its link goes here once it is uploaded.
 
 ---
 

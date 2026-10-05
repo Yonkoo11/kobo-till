@@ -1,4 +1,4 @@
-// Kobo demo video. Every frame is the real app, recorded on the test phone (see video/STORYBOARD.md).
+// Kobo demo video, judge cut. Every phone frame is the real app on Solana mainnet (see video/STORYBOARD.md).
 // Narration: one continuous Gemini TTS take, atempo 1.12, EBU R128 at I=-16, sliced per scene by
 // align.py; caption timings come from Whisper word timestamps on that audio (timing.json).
 import timing from "../timing.json";
@@ -31,21 +31,25 @@ export const LAYOUT = {
 
 const s = (sec: number) => Math.round(sec * FPS);
 
-export const VIDEO_FILES = {
-  sale: "video/sale.mp4", // emuA3: ₦30,000 typed, QR, paid at +4 s (2026-10-04 09:26)
-  after: "video/after.mp4", // emuD: Share receipt, Today, Close the day, Disconnect, Connect wallet (09:29)
-} as const;
-
-// scene: [source, start second in the source]. Scene length comes from the narration (SCENE_DURATIONS).
-export const SHOTS = {
-  hook: { src: VIDEO_FILES.sale, from: s(29.6) }, // Waiting, then the flip to Paid at +2.3 s and the receipt printing
-  till: { src: VIDEO_FILES.sale, from: s(4.5) }, // ₦0 → ₦3 → ₦300 → ₦30,000 with the live USDC line
-  waiting: { src: VIDEO_FILES.sale, from: s(17.4) }, // QR, rate locked, "Checked hh:mm:ss" ticking
-  paid: { src: VIDEO_FILES.after, from: s(1.0) }, // Paid receipt, Share receipt opens at +6 s
-  detail: { src: VIDEO_FILES.after, from: s(8.5) }, // the share sheet: receipt text with the Solscan link
-  closeday: { src: VIDEO_FILES.after, from: s(22.0) }, // Today with three sales, Close the day summary at +7.3 s
-  mwa: { src: VIDEO_FILES.after, from: s(58.0) }, // Welcome, Connect wallet, the wallet's authorize sheet
-} as const;
+// Judge cut: real mainnet payment, 2026-10-05 19:41 (Lagos time), recorded on two Android emulators with
+// Google Play. encode-judge.sh cuts one clip per scene from recA (shop, Kobo) and recB (customer, Phantom).
+// Tx 4rFCgZJo…WWFRdBx, block 453662644, 18:41:53 UTC, 0.12 USDC Hnsj…9Cf1 -> BUzv…tjg9.
+type ShotDef = {
+  src: string;
+  from: number;
+  still?: boolean;
+  note?: string; // small line under the phone, for footage that is sped up or cut down
+  mark?: { x: number; y: number; w: number; h: number; at: number }; // highlight box, frame coords, from scene frame `at`
+};
+export const SHOTS: Record<"hook" | "till" | "waiting" | "pay" | "paid" | "proof" | "closeday", ShotDef> = {
+  hook: { src: "video/j-hook.mp4", from: 0 }, // Waiting, the flip to Paid at 4.0 s, the receipt
+  till: { src: "video/j-till.mp4", from: 0, note: "Sped up 3×" }, // ₦15 -> ₦150 -> Charge
+  waiting: { src: "video/j-waiting.mp4", from: 0 }, // the QR, ₦150 · 0.12 USDC, rate locked at 19:37
+  pay: { src: "video/j-pay.mp4", from: 0, note: "Customer's phone · 90 s of taps cut to 10 s" }, // SOL pre-filled, coin switch, 0.12 USDC, Confirm, Sent
+  paid: { src: "video/j-paid.mp4", from: 0, mark: { x: 262, y: 366, w: 206, h: 44, at: s(2.2) } }, // "Paid (matched by amount)"
+  proof: { src: "assets/solscan.png", from: 0, still: true, note: "solscan.io, the payment above" },
+  closeday: { src: "video/j-closeday.mp4", from: 0 }, // Today: ₦150 today, Close the day
+};
 
 export const AUDIO_DELAY = s(0.4);
 type Key = keyof typeof timing.scenes;
@@ -63,7 +67,7 @@ export const SUBTITLES = Object.fromEntries(
   ]),
 ) as Record<Key, { text: string; start: number; end: number }[]>;
 
-export const SCENE_ORDER = ["hook", "problem", "till", "waiting", "paid", "detail", "closeday", "mwa", "end"] as const;
+export const SCENE_ORDER = ["hook", "problem", "till", "waiting", "pay", "paid", "proof", "closeday", "end"] as const;
 
 export const TOTAL_FRAMES =
   SCENE_ORDER.reduce((a, k) => a + SCENE_DURATIONS[k], 0) - CROSSFADE * (SCENE_ORDER.length - 1);
@@ -76,7 +80,7 @@ export const PROBLEM_LINES = [
 ] as const;
 
 export const END = {
-  still: "assets/welcome.png", // a frame of the real Welcome screen from after.mp4
+  still: "assets/paid-end.png", // the real Paid receipt from recA (mainnet)
   headline: "Get paid in digital dollars.",
   link: "github.com/Yonkoo11/kobo-till",
   credit: "Open source. Built for Clock In, Solana Mobile x Radiants.",
@@ -86,16 +90,16 @@ export const END = {
 export const SOCIAL_W = 1080;
 export const SOCIAL_H = 1920;
 export const SOCIAL = {
-  src: "video/social.mp4", // sale recording scaled to 864x1920 on the ground colour
+  src: "video/j-social.mp4", // recA (mainnet): typing ₦150, the QR, the flip to Paid, joined by encode-judge.sh
   segs: [
-    { from: s(5.0), dur: s(3.6) }, // typing the price
-    { from: s(18.0), dur: s(3.4) }, // the QR
-    { from: s(31.3), dur: s(4.6) }, // the flip to Paid
+    { from: s(0), dur: s(3.6) }, // ₦15 -> ₦150
+    { from: s(3.6), dur: s(3.4) }, // the QR, ₦150 · 0.12 USDC
+    { from: s(7.0), dur: s(4.6) }, // the flip to Paid
   ],
   subs: [
     { text: "Type the price in naira.", start: s(0.3), end: s(3.4) },
-    { text: "Show the QR. Any Solana wallet pays in USDC.", start: s(3.6), end: s(6.9) },
-    { text: "Paid. Receipt printed.", start: s(7.4), end: s(10.6) },
+    { text: "Show the QR. The customer pays in USDC.", start: s(3.6), end: s(6.9) },
+    { text: "Paid, on Solana mainnet.", start: s(7.4), end: s(10.6) },
   ],
 } as const;
 export const SOCIAL_DURATION = SOCIAL.segs.reduce((a, g) => a + g.dur, 0) - CROSSFADE * (SOCIAL.segs.length - 1);

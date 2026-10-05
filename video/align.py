@@ -7,7 +7,7 @@ per scene {file, cut, dur} and per sentence caption {text, start, end} in scene-
 """
 import difflib, json, re, subprocess
 
-SCENES = ["hook", "problem", "till", "waiting", "paid", "detail", "closeday", "mwa", "end"]
+SCENES = ["hook", "problem", "till", "waiting", "pay", "paid", "proof", "closeday", "end"]
 norm = lambda s: re.sub(r"[^a-z0-9']", "", s.lower())
 
 paras = [p.strip() for p in open("NARRATION.txt").read().split("\n\n") if p.strip()]

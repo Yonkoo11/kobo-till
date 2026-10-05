@@ -60,4 +60,5 @@ design/measure/
 video/out/
 video/public/video/
 video/public/audio/
+video/fallback/
 deck/out/
