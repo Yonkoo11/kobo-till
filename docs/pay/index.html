@@ -28,7 +28,7 @@
   .gap { height: 16px; }
   .meta { font-size: 14px; line-height: 20px; color: var(--ink2); }
   .amount { font-weight: 600; font-size: 40px; line-height: 46px; letter-spacing: -0.8px; }
-  .qr { width: 220px; height: 220px; margin: 8px 0; }
+  .qr { width: 200px; height: 200px; margin: 8px 0; }
   .qr svg { width: 100%; height: 100%; display: block; }
   .pay { display: flex; align-items: center; justify-content: center; min-height: 56px; border-radius: 12px; background: var(--accent);
     color: #fff; font-weight: 500; font-size: 18px; text-decoration: none; transition: opacity 160ms var(--ease); }
@@ -58,12 +58,12 @@
     <div class="gap"></div>
     <div class="note" id="coinNote"></div>
     <div class="gap"></div>
+    <div class="addr">This page cannot check who sent you this link. Pay only if it came from the shop you are buying from. The money goes to this address, and Kobo never holds it:<br><b id="to"></b></div>
+    <div class="gap"></div>
     <div class="slip">
       <div class="meta">Paying from another phone? Scan this with its Solana wallet.</div>
       <div class="qr" id="qr" role="img" aria-label="QR code for this payment"></div>
     </div>
-    <div class="gap"></div>
-    <div class="addr">This page cannot check who sent you this link. Pay only if it came from the shop you are buying from. The money goes to this address, and Kobo never holds it:<br><b id="to"></b></div>
   </section>
 
   <section id="bad" hidden>
