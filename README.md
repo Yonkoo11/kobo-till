@@ -23,15 +23,15 @@ Built for Clock In (Solana Mobile x Radiants).
 
 ## ▶ Demo
 
-*A 68-second walk through one real ₦150 sale on Solana mainnet, 2026-10-05: [assets/media/kobo-demo.mp4](assets/media/kobo-demo.mp4). Both phones are Android emulators with Google Play, the shop running Kobo and the customer running Phantom. The shop name is a test name.*
+*A 68-second walk through one real ₦150 sale on Solana mainnet, 2026-10-05: [assets/media/kobo-demo.mp4](assets/media/kobo-demo.mp4). Both phones are Android emulators with Google Play, the shop running Kobo and the customer running Phantom. The shop name is a test name. In the video's customer scene Phantom shows SOL: our test opened the link with a phone command that cut it at the first `&`. Opened from the pay page, Phantom shows 0.12 USDC, as pictured below.*
 
 <table>
 <tr>
-<th width="50%">Customer: Phantom pre-fills SOL; the payer switches to USDC</th>
+<th width="50%">Customer: the pay link opens Phantom with 0.12 USDC to the shop</th>
 <th width="50%">Today: every sale, then Close the day</th>
 </tr>
 <tr>
-<td align="center"><img src="assets/readme/phantom.png" alt="Phantom's review screen with the Payment Method sheet open: Cash, SOL, USDC" width="280"></td>
+<td align="center"><img src="assets/readme/phantom.png" alt="Phantom's Review Send screen: 0.12 USDC to BUzv…tjg9, paid in USDC" width="280"></td>
 <td align="center"><img src="assets/readme/today.png" alt="Kobo's Today screen: ₦150 today, one paid sale, Close the day" width="280"></td>
 </tr>
 </table>
@@ -177,8 +177,8 @@ All money logic lives in `app/core/` with no screen code in it, which is why the
 | **Reading real mainnet payments** | Real, including version 1 transactions (supported since 2026-10-04 after a check failed on one). |
 | **Seeker phone check** | Real on mainnet against the Solana Mobile docs' example owner. |
 | **Payment link and pay page** | Real. The page is live and rebuilds exactly the QR's Solana Pay link (16 tests). A first Telegram test cut the link at a space in the shop name; the name now travels in link-safe characters, not yet re-sent through Telegram. |
-| Phantom and the reference | Measured negative. When the link reached Phantom through Android's open-link path, Phantom pre-filled SOL, dropped the USDC coin and the reference; the payer switched to USDC by hand. Kobo matched by exact amount. Phantom's camera scanner is not yet tested. |
-| The tap from a phone browser into a wallet | Not yet tested. |
+| Phantom and the reference | Measured negative. Phantom keeps the coin and the amount from a Kobo link and pays exactly 0.12 USDC, but leaves the sale's one-time reference out of the transaction (seen 3 times, the last on 2026-10-06 from the live pay page: [Solscan](https://solscan.io/tx/3SFWF7r4spGYCJgxniqsXeDtEvDpu5oV2swKEvs2hLnajDktCHq3W1PoKUrf9Res5KRyHsNfwp6sJrkn92eUyezS)). Kobo matches those payments by exact amount. Phantom's camera scanner is not yet tested. |
+| The tap from a phone browser into a wallet | Real. On an emulator, the live pay page's button opened Phantom at "Review Send: 0.12 USDC" to the shop. |
 | Running on a physical Android phone | Not yet. Every run so far is on Android emulators (Google Play image, arm64). |
 | Underpaid, part payments, refund maths | Run on a local Solana network only. |
 | Refunds and Seeker rewards signed by a real wallet | Not done. |

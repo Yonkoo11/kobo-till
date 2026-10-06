@@ -39,7 +39,7 @@ export const copy = {
   shareReceipt: 'Share receipt',
   sharePayLink: 'Send payment link',
   payLinkText: (shop: string, naira: string, coins: string, coin: string, hhmm: string, url: string) =>
-    `${shop}: please pay ₦${naira}, that is ${coins} ${coin} on Solana (rate locked at ${hhmm}). Pay here: ${url} If your wallet shows SOL, switch it to ${coin}.`,
+    `${shop}: please pay ₦${naira}, that is ${coins} ${coin} on Solana (rate locked at ${hhmm}). Pay here: ${url}`,
   newSale: 'New sale',
   receiptText: (shop: string, coins: string, coin: string, naira: string, hhmm: string, date: string, url: string) =>
     `${shop}: received ${coins} ${coin} (₦${naira}) at ${hhmm}, ${date}. Proof: ${url}`,

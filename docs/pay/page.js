@@ -23,9 +23,11 @@ async function show() {
   $('amount').textContent = `${got.amount} ${got.coin}`
   $('naira').textContent = got.naira ? `₦${Number(got.naira).toLocaleString('en-NG')}, as written in the link` : ''
   $('pay').href = got.solanaUrl
-  $('coinNote').textContent = `Pay in ${got.coin}, exactly ${got.amount}. If your wallet shows SOL or another coin, switch it to ${got.coin} and keep the amount at ${got.amount}.`
+  $('coinNote').textContent = `Pay in ${got.coin}, exactly ${got.amount}. If your wallet asks which coin to pay with, pick ${got.coin}.`
   $('to').textContent = got.recipient
-  $('qr').innerHTML = await qrSvg(got.solanaUrl) // SVG made by the QR library from the checked link
+  // The QR library's SVG is parsed as an image document and attached as a node; no markup is inserted.
+  const svg = new DOMParser().parseFromString(await qrSvg(got.solanaUrl), 'image/svg+xml').documentElement
+  $('qr').replaceChildren(document.importNode(svg, true))
   $('ok').hidden = false
   $('bad').hidden = true
   document.title = `Pay ${got.amount} ${got.coin} with Kobo`

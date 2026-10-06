@@ -81,7 +81,7 @@ const slides = [
       ['Paid detection', 'Real on mainnet: the receipt printed within seconds of the payment\'s block. Underpaid and part payments ran on a local network.'],
       ['Reading real mainnet payments', 'Real. The app\'s code read a real USDC transfer on mainnet, including a version 1 transaction.'],
       ['Seeker phone check', 'Real on mainnet against the Solana Mobile docs\' example owner.'],
-      ['A real wallet paying a Kobo QR on mainnet', 'Done twice with Phantom (2026-10-05): ₦150 = 0.12 USDC each, Paid within seconds. Phantom dropped the coin and reference from the link; Kobo matched by amount.'],
+      ['A real wallet paying a Kobo QR on mainnet', 'Done with Phantom (2026-10-05 and 06): 0.12 USDC each, Paid within seconds. Phantom keeps the coin and amount but drops the reference; Kobo matches by amount.'],
       ['Refund and SKR reward signed by a real wallet', 'Not yet. The maths ran on the local network; signing needs the wallet test.'],
       ['A physical Android phone', 'Not yet. Every run so far is on Android emulators with Google Play.'],
       ['Tap to pay (NFC)', 'Not built.'],
