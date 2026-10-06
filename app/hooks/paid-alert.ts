@@ -29,6 +29,7 @@ export async function sendPaidAlert(sale: StoredSale, patch: Partial<StoredSale>
   try {
     const received = patch.received ? coins(patch.received) : coins(sale.expected)
     await Notifications.scheduleNotificationAsync({
+      identifier: `paid-${sale.id}`, // one notification per sale: a repeat check replaces it instead of stacking
       content: {
         title: patch.state === 'underpaid' ? copy.alertUnderpaid(naira(sale.naira)) : copy.alertPaid(naira(sale.naira)),
         body: copy.alertBody(received, sale.coin, short(patch.payer), sale.label),
