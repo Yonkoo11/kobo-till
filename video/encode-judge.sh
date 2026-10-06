@@ -24,7 +24,7 @@ printf "%s" "$S" > pay-list.txt
 ffmpeg -hide_banner -loglevel error -y -f concat -safe 0 -i pay-list.txt -vf "$HOLD" -c:v libx264 -crf 18 -an j-pay.mp4
 rm -f pay-*.mp4 pay-list.txt
 # stills: the Solscan page of the recorded payment, and the Paid receipt for the close
-SP=recordings
+SP="${KOBO_REC_DIR:-$(cd ../../.. && pwd)/recordings}"  # raw captures, gitignored (solscan-top.png)
 ffmpeg -hide_banner -loglevel error -y -i $SP/solscan-top.png -vf "scale=450:1000:flags=lanczos,pad=1920:1080:240:40:color=$G" ../assets/solscan.png
 ffmpeg -hide_banner -loglevel error -y -ss 390 -i recA.mp4 -frames:v 1 -vf "$P" ../assets/paid-end.png
 for f in j-*.mp4; do echo "$f $(ffprobe -v error -show_entries format=duration -of csv=p=0 $f)"; done

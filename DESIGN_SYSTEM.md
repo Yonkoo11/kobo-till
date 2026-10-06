@@ -1,9 +1,7 @@
 # Kobo design system
 
 Extracted from the code as built (`app/ui/theme.ts`, `app/ui/kit.tsx`), 2026-10-05. Direction A, "Till receipt"
-(design/direction.md). Nothing here is a value the code does not use, except where marked "declared, not used".
-The web-measured design gate last exited 1 on one motion budget that its CSS measurement cannot read on a
-React Native app (ai/design-progress.md, 2026-10-04); this file documents the native build.
+Nothing here is a value the code does not use, except where marked "declared, not used".
 
 ## Identity
 

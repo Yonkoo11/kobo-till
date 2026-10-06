@@ -62,3 +62,19 @@ video/public/video/
 video/public/audio/
 video/fallback/
 deck/out/
+recordings/
+
+# Local working notes (kept on disk, not published)
+ACCESS.md
+SECURITY.md
+submission.md
+company/
+design/
+brand/ART-DIRECTION.md
+brand/BRAND-TRUTH.md
+brand/CRITIQUE.md
+video/ASSETS.md
+video/DECISIONS.md
+video/SCRIPT.md
+video/STORYBOARD.md
+.deploy-state.json

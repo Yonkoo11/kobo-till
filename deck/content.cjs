@@ -1,5 +1,5 @@
 // Every string the pitch deck shows. One place, read by build.cjs (HTML, PDF, PNG) and make-pptx.cjs.
-// Facts come from README.md, company/THESIS.md and CLAUDE.md Verified Facts. Nothing here is a claim
+// Facts come from README.md and its honesty table. Nothing here is a claim
 // the app has not earned; "Where it stands" is updated after each test that changes a line.
 
 const T = {

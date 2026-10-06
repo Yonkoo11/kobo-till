@@ -2,7 +2,7 @@
 # Pre-composites the phone recordings (1080x2400, variable frame rate) into 1920x1080 30 fps clips with the
 # phone at LAYOUT.phone (x 240, y 40, 450x1000) on the app's ground colour. Nothing is stretched.
 set -e
-S=recordings
+S="${KOBO_REC_DIR:-$(pwd)/../recordings}"  # raw recordings, gitignored. Fallback (test-network) cut only.
 G=0xECEEEB
 P="scale=450:1000:flags=lanczos,pad=1920:1080:240:40:color=$G,fps=30,format=yuv420p"
 ffmpeg -hide_banner -loglevel error -y -i $S/emuA3.mp4 -vf "$P" -c:v libx264 -crf 18 -an public/video/sale.mp4
