@@ -27,8 +27,8 @@ Built for Clock In (Solana Mobile x Radiants).
 
 <table>
 <tr>
-<th width="50%">The customer's side: Phantom opens the request with SOL pre-filled; the payer switches to USDC</th>
-<th width="50%">Today's roll: each sale with amount, payer and status, then Close the day</th>
+<th width="50%">Customer: Phantom pre-fills SOL; the payer switches to USDC</th>
+<th width="50%">Today: every sale, then Close the day</th>
 </tr>
 <tr>
 <td align="center"><img src="assets/readme/phantom.png" alt="Phantom's review screen with the Payment Method sheet open: Cash, SOL, USDC" width="280"></td>
