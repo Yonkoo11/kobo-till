@@ -9,7 +9,7 @@ import { Banner, Body, Button, Line, Meta, Screen, Slip, Title } from '@/ui/kit'
 import { t } from '@/ui/theme'
 
 export default function Welcome() {
-  const { connect } = useMobileWallet()
+  const { connect, disconnect, store } = useMobileWallet()
   const { data, update } = useStore()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -23,8 +23,12 @@ export default function Welcome() {
       try {
         await withTimeout(connect(), 30000)
       } catch (first) {
+        // A saved wallet pass the wallet no longer accepts: Phantom closes the session instead of answering
+        // (seen 2026-10-06), so the library never falls back to a fresh connect. Forget the pass and ask again.
+        const stalePass = !!store.$authToken.get()
         // Seen on a real phone 2026-10-05: a wallet that is still starting answers "cancelled" once.
-        if (!/cancel/i.test(String(first))) throw first
+        if (!stalePass && !/cancel/i.test(String(first))) throw first
+        if (stalePass) await disconnect()
         await new Promise((r) => setTimeout(r, 1500))
         await withTimeout(connect(), 30000)
       }
