@@ -3,6 +3,7 @@ import * as Haptics from 'expo-haptics'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useRef } from 'react'
 import { Linking, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
+import * as ExpoPrint from 'expo-print'
 import QRCode from 'react-native-qrcode-svg'
 import { IS_TEST_BUILD, TIMING } from '@/constants/app-config'
 import { useLastCheck, useOnline } from '@/hooks/online'
@@ -14,6 +15,7 @@ import { useStore } from '@/state/store'
 import { toSale } from '@/state/convert'
 import { StoredSale } from '@/state/types'
 import { copy } from '@/ui/copy'
+import { receiptHtml } from '@/ui/receipt-html'
 import { randomBytes } from '@/utils/random'
 import { coins, dateText, hhmm, hhmmss, naira, rateText, short, solscan } from '@/ui/format'
 import { Banner, Body, Button, ChainCheck, Line, Meta, Print, Screen, Slip, Title } from '@/ui/kit'
@@ -81,6 +83,15 @@ function sharePayLink(sale: StoredSale, patchSale: (id: string, p: Partial<Store
   Share.share({ message: copy.payLinkText(sale.label, naira(sale.naira), coins(sale.expected), sale.coin, hhmm(sale.createdAt), link) }).catch(() => undefined)
 }
 
+// Android's print dialog: pick a printer, or Save as PDF.
+async function printReceipt(sale: StoredSale, shop: string) {
+  try {
+    await ExpoPrint.printAsync({ html: await receiptHtml(sale, shop) })
+  } catch {
+    // dialog cancelled or no print service
+  }
+}
+
 function PaidView({ sale }: { sale: StoredSale }) {
   const { data } = useStore()
   const share = () =>
@@ -107,7 +118,10 @@ function PaidView({ sale }: { sale: StoredSale }) {
         </Slip>
       </Print>
       <View style={{ flex: 1 }} />
-      <Button title={copy.shareReceipt} kind="secondary" onPress={share} />
+      <View style={{ flexDirection: 'row', gap: t.space(2) }}>
+        <Button title={copy.shareReceipt} kind="secondary" onPress={share} style={{ flex: 1 }} />
+        <Button title={copy.printReceipt} kind="secondary" onPress={() => void printReceipt(sale, data.shop?.name ?? sale.label)} style={{ flex: 1 }} />
+      </View>
       <Button title={copy.newSale} onPress={() => router.replace('/(tabs)')} />
     </Screen>
   )
