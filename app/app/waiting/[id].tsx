@@ -95,6 +95,7 @@ function PaidView({ sale }: { sale: StoredSale }) {
           <Title>{copy.paidTitle(naira(sale.naira))}</Title>
           {sale.matchedBy === 'amount' ? <Meta>{copy.paidByAmountNote}</Meta> : null}
           <View>
+            {sale.items?.length ? <Line label={copy.receiptItems} value={sale.items.map((n) => `₦${naira(n)}`).join(' + ')} /> : null}
             <Line label={copy.receiptReceived} value={`${coins(sale.received!)} ${sale.coin}`} />
             {sale.state === 'overpaid' ? <Line label="" value={`+${coins(BigInt(sale.received!) - BigInt(sale.expected))} ${sale.coin}`} /> : null}
             <Line label={copy.receiptFrom} value={short(sale.payer)} />

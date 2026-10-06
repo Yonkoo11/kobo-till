@@ -102,12 +102,14 @@ export function Button({
   kind = 'primary',
   disabled,
   busy,
+  style,
 }: {
   title: string
   onPress: () => void
   kind?: 'primary' | 'secondary' | 'link' | 'danger'
   disabled?: boolean
   busy?: boolean
+  style?: ViewStyle
 }) {
   const off = disabled || busy
   return (
@@ -115,7 +117,7 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ disabled: !!off, busy: !!busy }}
       onPress={off ? undefined : onPress}
-      style={({ pressed }) => [s.btn, s[kind], off && s.off, pressed && !off && s.pressed]}
+      style={({ pressed }) => [s.btn, s[kind], off && s.off, pressed && !off && s.pressed, style]}
     >
       {busy ? <ActivityIndicator color={kind === 'primary' ? t.accentInk : t.accent} /> : null}
       <Text style={[s.btnText, kind === 'secondary' && { color: t.ink1 }, kind === 'link' && { color: t.accent }, kind === 'danger' && { color: t.danger }]}>{title}</Text>

@@ -68,6 +68,7 @@ export default function SaleDetail() {
       <Slip>
         <Title>₦{naira(sale.naira)}</Title>
         <View>
+          {sale.items?.length ? <Line label={copy.receiptItems} value={sale.items.map((n) => `₦${naira(n)}`).join(' + ')} /> : null}
           <Line label={copy.receiptCoin} value={`${coins(sale.received ?? sale.expected)} ${sale.coin}`} />
           <Line label={copy.receiptRate} value={`₦${rateText(sale.rate)} per $1`} />
           <Line label={copy.receiptTime} value={hhmm(sale.createdAt)} />

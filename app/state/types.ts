@@ -35,6 +35,7 @@ export interface StoredSale {
   refundSig?: string
   parentId?: string
   linkUntil?: number // set when the sale is sent as a payment link
+  items?: number[] // naira prices when the sale was built from several items
 }
 
 export interface CachedRate {

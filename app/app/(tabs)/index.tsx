@@ -24,13 +24,22 @@ export default function Till() {
   const accepted = (['USDC', 'USDT'] as CoinId[]).filter((c) => data.shop?.accept[c])
   const [coin, setCoin] = useState<CoinId>(accepted[0] ?? 'USDC')
   const [amount, setAmount] = useState('')
+  const [items, setItems] = useState<number[]>([]) // prices already added with + Item
   const [typedRate, setTypedRate] = useState('')
-  const value = Number(amount || '0')
+  const typed = Number(amount || '0')
+  const value = items.reduce((a, b) => a + b, 0) + typed
   const rate = view.kind === 'live' || view.kind === 'offline' || view.kind === 'manual' ? view.value : null
   const preview = rate && value > 0 ? createPreview(value, rate, coin) : null
 
-  const press = (k: string) =>
+  const press = (k: string) => {
+    if (k === '⌫' && !amount && items.length) return setItems((x) => x.slice(0, -1)) // empty keypad: drop the last item
     setAmount((a) => (k === '⌫' ? a.slice(0, -1) : (a + k).replace(/^0+/, '').slice(0, 9)))
+  }
+  const addItem = () => {
+    if (typed <= 0) return
+    setItems((x) => [...x, typed])
+    setAmount('')
+  }
 
   const charge = () => {
     if (!rate || !address || value <= 0) return
@@ -44,9 +53,11 @@ export default function Till() {
       day: lagosDay(sale.createdAt),
       state: 'waiting',
       reward: 'none',
+      ...(items.length ? { items: typed > 0 ? [...items, typed] : items } : {}),
     }
     update((d) => ({ ...d, sales: [stored, ...d.sales] }))
     setAmount('')
+    setItems([])
     router.push(`/waiting/${stored.id}`)
   }
 
@@ -57,6 +68,11 @@ export default function Till() {
       <Slip>
         <Meta>{data.shop?.name}</Meta>
         <Text style={s.amount} adjustsFontSizeToFit numberOfLines={1}>₦{naira(value)}</Text>
+        {items.length ? (
+          <Text style={s.items} numberOfLines={2} accessibilityLabel={copy.itemsLabel(items.length + (typed > 0 ? 1 : 0))}>
+            {[...items, ...(typed > 0 ? [typed] : [])].map((n) => `₦${naira(n)}`).join(' + ')}
+          </Text>
+        ) : null}
         <Text style={s.coin}>{preview ? `≈ ${preview} ${coin}` : ' '}</Text>
         <RateLine view={view} onManual={setManual} typed={typedRate} setTyped={setTypedRate} />
       </Slip>
@@ -76,7 +92,10 @@ export default function Till() {
           </Pressable>
         ))}
       </View>
-      <Button title={copy.charge} onPress={charge} disabled={!rate || value <= 0 || !address} />
+      <View style={s.actions}>
+        <Button title={copy.addItem} kind="secondary" onPress={addItem} disabled={typed <= 0} style={s.addBtn} />
+        <Button title={copy.charge} onPress={charge} disabled={!rate || value <= 0 || !address} style={s.chargeBtn} />
+      </View>
     </Screen>
   )
 }
@@ -117,6 +136,10 @@ function RateLine(p: { view: ReturnType<typeof useRate>['view']; onManual: (v: n
 
 const s = StyleSheet.create({
   amount: { ...t.size.amount, fontFamily: t.font.medium, color: t.ink1, fontVariant: ['tabular-nums'] },
+  items: { ...t.size.meta, fontFamily: t.font.regular, color: t.ink2, fontVariant: ['tabular-nums'] },
+  actions: { flexDirection: 'row', gap: t.space(2) },
+  addBtn: { flex: 1 },
+  chargeBtn: { flex: 2 },
   coin: { ...t.size.coin, fontFamily: t.font.medium, color: t.ink1, fontVariant: ['tabular-nums'] },
   rate: { ...t.size.meta, fontFamily: t.font.regular, color: t.ink2 },
   rateInput: { ...t.size.body, fontFamily: t.font.regular, color: t.ink1, borderBottomWidth: 1, borderColor: t.rule, minWidth: 72, paddingVertical: t.space(1) },
