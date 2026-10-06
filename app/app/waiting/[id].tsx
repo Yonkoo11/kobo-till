@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useRef } from 'react'
 import { Linking, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
-import { TIMING } from '@/constants/app-config'
+import { IS_TEST_BUILD, TIMING } from '@/constants/app-config'
 import { useLastCheck, useOnline } from '@/hooks/online'
 import { useNow } from '@/hooks/use-now'
 import { createSale, newReference, saleUrl } from '@/core/sale'
@@ -64,7 +64,7 @@ function WaitingView({ sale, onCancel, twins }: { sale: StoredSale; onCancel: ()
       {long ? <Banner text={copy.waitingLong(hhmm(sale.createdAt))} tone="info" /> : null}
       {twins ? <Banner text={copy.sameAmountNote} tone="info" /> : null}
       <View style={{ flex: 1 }} />
-      <Button title={copy.sharePayLink} kind="secondary" onPress={() => sharePayLink(sale)} />
+      {!IS_TEST_BUILD ? <Button title={copy.sharePayLink} kind="secondary" onPress={() => sharePayLink(sale)} /> : null}
       <Button title={copy.cancel} kind="link" onPress={onCancel} />
     </Screen>
   )

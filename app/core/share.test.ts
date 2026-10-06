@@ -50,10 +50,24 @@ describe('parsePayLink refuses a link it cannot vouch for', () => {
   ])('%s=%s -> %s', (k, v, reason) => {
     expect(parsePayLink(swap(k, v))).toEqual({ ok: false, reason })
   })
-  it('keeps a label with markup as plain text, cut to 64 characters', () => {
+  it('keeps a label with markup as plain text, cut to 40 characters', () => {
     const got = parsePayLink(swap('l', '<img src=x onerror=alert(1)>' + 'x'.repeat(80)))
-    expect(got.ok && got.label.length).toBe(64)
+    expect(got.ok && got.label.length).toBe(40)
     expect(got.ok && got.label.startsWith('<img')).toBe(true)
+  })
+  it('drops direction-reversing and invisible characters from the label', () => {
+    const got = parsePayLink(swap('l', '\u202EsnoS\u202C Kobo\u200B verified\nx'))
+    expect(got.ok && got.label).toBe('snoS Kobo verifiedx')
+  })
+  it('does not cut an emoji in half', () => {
+    const got = parsePayLink(swap('l', 'a'.repeat(39) + '😀'))
+    expect(got.ok && got.label).toBe('a'.repeat(39) + '😀')
+  })
+  it.each([
+    ['22222222222222222222222222222222', 'too short to be 32 bytes'],
+    ['1'.repeat(33), '33 zero bytes'],
+  ])('refuses recipient %s (%s)', (r) => {
+    expect(parsePayLink(swap('r', r))).toEqual({ ok: false, reason: 'recipient' })
   })
   it('refuses an empty fragment', () => {
     expect(parsePayLink('').ok).toBe(false)

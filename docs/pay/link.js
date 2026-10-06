@@ -8,7 +8,25 @@ export const MINTS = {
   Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB: 'USDT',
 }
 
+const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 const BASE58 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+
+/** True when s is base58 for exactly 32 bytes, the size of a Solana address. */
+export function isAddress32(s) {
+  if (!BASE58.test(s)) return false
+  let n = 0n
+  for (const c of s) n = n * 58n + BigInt(ALPHABET.indexOf(c))
+  let bytes = 0
+  while (n > 0n) { n >>= 8n; bytes++ }
+  for (const c of s) { if (c !== '1') break; bytes++ } // leading '1's are zero bytes
+  return bytes === 32
+}
+
+// Shop names are capped at 40 characters in the app. Control, format (bidi, zero-width) and line characters are
+// dropped so a name cannot reverse itself or fake a badge.
+export function cleanLabel(raw) {
+  return Array.from(String(raw || '').replace(/[\p{Cc}\p{Cf}\u2028\u2029]/gu, '').trim()).slice(0, 40).join('')
+}
 const AMOUNT = /^(0|[1-9]\d{0,9})(\.\d{1,6})?$/
 const NAIRA = /^[1-9]\d{0,11}$/
 
@@ -24,13 +42,13 @@ export function parsePayLink(hash) {
   const mint = p.get('m') || ''
   const reference = p.get('ref') || ''
   const naira = p.get('n') || ''
-  const label = (p.get('l') || '').slice(0, 64)
-  if (!BASE58.test(recipient)) return { ok: false, reason: 'recipient' }
+  const label = cleanLabel(p.get('l'))
+  if (!isAddress32(recipient)) return { ok: false, reason: 'recipient' }
   if (!AMOUNT.test(amount) || Number(amount) <= 0) return { ok: false, reason: 'amount' }
   if (!Object.prototype.hasOwnProperty.call(MINTS, mint)) return { ok: false, reason: 'coin' }
-  if (!BASE58.test(reference)) return { ok: false, reason: 'reference' }
+  if (!isAddress32(reference)) return { ok: false, reason: 'reference' }
   if (naira && !NAIRA.test(naira)) return { ok: false, reason: 'naira' }
-  const q = new URLSearchParams({ amount, 'spl-token': mint, reference, label: label || 'Kobo shop', message: 'Kobo sale' })
+  const q = new URLSearchParams({ amount, 'spl-token': mint, reference, label, message: 'Kobo sale' })
   const solanaUrl = `solana:${recipient}?${q.toString().replace(/\+/g, '%20')}`
   return { ok: true, recipient, amount, mint, coin: MINTS[mint], reference, label, naira, solanaUrl }
 }

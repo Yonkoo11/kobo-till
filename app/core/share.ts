@@ -15,7 +15,7 @@ export function shareLink(sale: Pick<Sale, 'recipient' | 'expected' | 'coin' | '
     m: COINS[sale.coin].mint,
     ref: sale.reference,
     n: String(Math.round(sale.naira)),
-    l: sale.label.slice(0, 64),
+    l: Array.from(sale.label).slice(0, 40).join(''),
   })
   return `${PAY_PAGE}#${p.toString().replace(/\+/g, '%20')}`
 }

@@ -36,7 +36,7 @@
   .pay:focus-visible { outline: 3px solid var(--ink1); outline-offset: 3px; }
   .note { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 12px 16px; font-size: 14px; line-height: 20px; }
   .addr { font-size: 14px; line-height: 20px; color: var(--ink2); }
-  .addr b { color: var(--ink1); font-weight: 500; }
+  .addr b { color: var(--ink1); font-weight: 500; word-break: break-all; }
   footer { font-size: 14px; line-height: 20px; color: var(--ink2); }
   footer a { color: var(--accent); }
   [hidden] { display: none !important; }
@@ -63,7 +63,7 @@
       <div class="qr" id="qr" role="img" aria-label="QR code for this payment"></div>
     </div>
     <div class="gap"></div>
-    <div class="addr">The money goes straight to the shop's own wallet, <b id="to"></b>. Kobo never holds it, and the shop's till confirms the payment on Solana.</div>
+    <div class="addr">This page cannot check who sent you this link. Pay only if it came from the shop you are buying from. The money goes to this address, and Kobo never holds it:<br><b id="to"></b></div>
   </section>
 
   <section id="bad" hidden>

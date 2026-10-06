@@ -10,7 +10,6 @@ const WHY = {
   reference: 'It is missing the sale reference.',
   naira: 'The naira price in it is not a valid number.',
 }
-const short = (a) => `${a.slice(0, 4)}…${a.slice(-4)}`
 
 async function show() {
   const got = parsePayLink(location.hash)
@@ -20,13 +19,12 @@ async function show() {
     $('ok').hidden = true
     return
   }
-  $('shop').textContent = got.label ? `${got.label} asks for` : 'A shop asks for'
+  $('shop').textContent = got.label ? `Payment request from "${got.label}"` : 'Payment request'
   $('amount').textContent = `${got.amount} ${got.coin}`
-  $('naira').textContent = got.naira ? `₦${Number(got.naira).toLocaleString('en-NG')} at the shop's locked rate` : ''
+  $('naira').textContent = got.naira ? `₦${Number(got.naira).toLocaleString('en-NG')}, as written in the link` : ''
   $('pay').href = got.solanaUrl
   $('coinNote').textContent = `Pay in ${got.coin}, exactly ${got.amount}. If your wallet shows SOL or another coin, switch it to ${got.coin} and keep the amount at ${got.amount}.`
-  $('to').textContent = short(got.recipient)
-  $('to').title = got.recipient
+  $('to').textContent = got.recipient
   $('qr').innerHTML = await qrSvg(got.solanaUrl) // SVG made by the QR library from the checked link
   $('ok').hidden = false
   $('bad').hidden = true
