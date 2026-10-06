@@ -19,7 +19,9 @@ const decode = getBase58Decoder()
 
 /** The wallet refused the saved pass (Mobile Wallet Adapter error -1). Phantom then closes the session. */
 export function isRefusedPass(e: unknown): boolean {
-  return /authorization request failed|ERROR_AUTHORIZATION_FAILED/i.test(String((e as { message?: string })?.message ?? e))
+  const err = e as { code?: unknown; message?: string }
+  if (err?.code === -1 || err?.code === 'ERROR_AUTHORIZATION_FAILED') return true
+  return /^-1\/|authorization request failed|ERROR_AUTHORIZATION_FAILED/i.test(String(err?.message ?? e))
 }
 
 /**
@@ -64,8 +66,17 @@ export function useFreshSend() {
         return await once()
       } catch (e) {
         if (!isRefusedPass(e) || !store.$authToken.get()) throw e
+        const accounts = store.$accounts.get()
+        const selectedAccount = store.$selectedAccount.get()
+        const authToken = store.$authToken.get()
         await store.persist(null)
-        return await once()
+        try {
+          return await once()
+        } catch (again) {
+          // Fresh connect declined or failed: keep the shop's address so the till still takes payments.
+          if (!store.$authToken.get() && accounts && selectedAccount && authToken) await store.persist({ accounts, authToken, selectedAccount })
+          throw again
+        }
       }
     },
     [authorize, store],
