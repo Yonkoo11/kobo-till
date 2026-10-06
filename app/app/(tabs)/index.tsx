@@ -50,7 +50,7 @@ export default function Till() {
   }
 
   return (
-    <Screen>
+    <Screen tab>
       {IS_TEST_BUILD ? <Banner text={copy.testBanner} tone="danger" /> : null}
       {!canSign ? <Banner text={copy.viewOnlyBanner} tone="info" /> : null}
       <Slip>

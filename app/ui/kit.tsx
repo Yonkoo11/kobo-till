@@ -4,9 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Svg, { Path } from 'react-native-svg'
 import { t } from './theme'
 
-export function Screen({ children, style }: PropsWithChildren<{ style?: ViewStyle }>) {
+// Android 15 draws the gesture bar over the app. Screens without the tab bar keep clear of it; tab screens
+// pass `tab`, because the tab bar already sits above the gesture bar.
+export function Screen({ children, style, tab }: PropsWithChildren<{ style?: ViewStyle; tab?: boolean }>) {
   return (
-    <SafeAreaView style={s.screen} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={s.screen} edges={tab ? ['top', 'left', 'right'] : ['top', 'left', 'right', 'bottom']}>
       <View style={[s.inner, style]}>{children}</View>
     </SafeAreaView>
   )

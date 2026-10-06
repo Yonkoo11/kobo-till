@@ -26,7 +26,7 @@ export default function Today() {
 
   const owed = new Set(sales.filter((x) => x.reward === 'pending').map((x) => x.sgtMint)).size
   return (
-    <Screen>
+    <Screen tab>
       <Slip>
         <Title>{copy.todayTotals(naira(nairaTotal), usd(usdTotal))}</Title>
         <Meta>{balance.isError ? copy.balanceOffline : balance.data !== undefined ? copy.yourDollars(usd(balance.data)) : '…'}</Meta>

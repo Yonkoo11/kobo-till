@@ -26,7 +26,7 @@ export default function Settings() {
       },
     ])
   return (
-    <Screen>
+    <Screen tab>
       <Slip>
         <Title>{data.shop?.name}</Title>
         <Meta>{short(address ?? '')}</Meta>
