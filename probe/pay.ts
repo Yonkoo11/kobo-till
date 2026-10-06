@@ -8,7 +8,7 @@ import { arg } from './_args'
 const RPC = process.env.KOBO_TEST_RPC || 'http://127.0.0.1:8899'
 if (!/127\.0\.0\.1|localhost|devnet/.test(RPC)) throw new Error('test networks only')
 const rpc = createSolanaRpc(RPC)
-const send = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: createSolanaRpcSubscriptions(RPC.replace(/^http/, 'ws').replace(':8899', ':8900')) })
+const send = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: createSolanaRpcSubscriptions(RPC.replace(/^http/, 'ws').replace(/:(\d+)$/, (_, p) => ':' + (Number(p) + 1))) })
 const cfg = JSON.parse(readFileSync(new URL('./.localnet.json', import.meta.url), 'utf8'))
 const payer = await createKeyPairSignerFromPrivateKeyBytes(new Uint8Array(cfg.seed))
 

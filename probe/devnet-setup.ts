@@ -9,7 +9,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 // KOBO_TEST_RPC=http://127.0.0.1:8899 targets a local solana-test-validator instead of devnet.
 const RPC = process.env.KOBO_TEST_RPC || 'https://api.devnet.solana.com'
 const rpc = createSolanaRpc(RPC)
-const subs = createSolanaRpcSubscriptions(RPC.replace(/^http/, 'ws').replace(':8899', ':8900'))
+const subs = createSolanaRpcSubscriptions(RPC.replace(/^http/, 'ws').replace(/:(\d+)$/, (_, p) => ':' + (Number(p) + 1))) // websocket = RPC port + 1
 const send = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: subs })
 const FILE = new URL(process.env.KOBO_TEST_RPC ? './.localnet.json' : './.devnet.json', import.meta.url)
 
