@@ -15,7 +15,25 @@ export function shareLink(sale: Pick<Sale, 'recipient' | 'expected' | 'coin' | '
     m: COINS[sale.coin].mint,
     ref: sale.reference,
     n: String(Math.round(sale.naira)),
-    l: Array.from(sale.label).slice(0, 40).join(''),
+    l: encodeLabel(Array.from(sale.label).slice(0, 40).join('')),
   })
-  return `${PAY_PAGE}#${p.toString().replace(/\+/g, '%20')}`
+  return `${PAY_PAGE}#${p.toString()}`
+}
+
+/** base64url of the UTF-8 name; the pay page's decodeLabel (docs/pay/link.js) reverses it. Tested against it.
+ * Plain JS on purpose: no btoa/TextEncoder, so it runs the same on any JavaScript engine. */
+export function encodeLabel(label: string): string {
+  const bytes: number[] = []
+  for (const ch of encodeURIComponent(label).match(/%[0-9A-F]{2}|[^%]/g) ?? []) {
+    bytes.push(ch.startsWith('%') ? parseInt(ch.slice(1), 16) : ch.charCodeAt(0))
+  }
+  const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+  let out = ''
+  for (let i = 0; i < bytes.length; i += 3) {
+    const n = (bytes[i] << 16) | ((bytes[i + 1] ?? 0) << 8) | (bytes[i + 2] ?? 0)
+    out += A[(n >> 18) & 63] + A[(n >> 12) & 63]
+    if (i + 1 < bytes.length) out += A[(n >> 6) & 63]
+    if (i + 2 < bytes.length) out += A[n & 63]
+  }
+  return out
 }

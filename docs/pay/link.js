@@ -24,6 +24,24 @@ export function isAddress32(s) {
 
 // Shop names are capped at 40 characters in the app. Control, format (bidi, zero-width) and line characters are
 // dropped so a name cannot reverse itself or fake a badge.
+// The shop name travels base64url-encoded (A-Z a-z 0-9 - _ only): chat apps cut a link at a space or decode %20,
+// seen in Telegram on 2026-10-06 where "l=Kobo%20Test%20Shop" ended the tappable link at "Kobo".
+export function decodeLabel(b64) {
+  try {
+    const bin = atob(String(b64 || '').replace(/-/g, '+').replace(/_/g, '/'))
+    return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)))
+  } catch {
+    return ''
+  }
+}
+
+export function encodeLabel(label) {
+  const bytes = new TextEncoder().encode(label)
+  let bin = ''
+  for (const b of bytes) bin += String.fromCharCode(b)
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
 export function cleanLabel(raw) {
   return Array.from(String(raw || '').replace(/[\p{Cc}\p{Cf}\u2028\u2029]/gu, '').trim()).slice(0, 40).join('')
 }
@@ -42,7 +60,7 @@ export function parsePayLink(hash) {
   const mint = p.get('m') || ''
   const reference = p.get('ref') || ''
   const naira = p.get('n') || ''
-  const label = cleanLabel(p.get('l'))
+  const label = cleanLabel(decodeLabel(p.get('l')))
   if (!isAddress32(recipient)) return { ok: false, reason: 'recipient' }
   if (!AMOUNT.test(amount) || Number(amount) <= 0) return { ok: false, reason: 'amount' }
   if (!Object.prototype.hasOwnProperty.call(MINTS, mint)) return { ok: false, reason: 'coin' }

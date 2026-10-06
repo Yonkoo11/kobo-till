@@ -2,7 +2,7 @@ import { address } from '@solana/kit'
 import { describe, expect, it } from 'vitest'
 import { parsePayLink } from '../../docs/pay/link.js'
 import { createSale, saleUrl } from './sale'
-import { PAY_PAGE, shareLink } from './share'
+import { encodeLabel, PAY_PAGE, shareLink } from './share'
 
 const sale = createSale({
   naira: 150,
@@ -26,6 +26,13 @@ describe('shareLink', () => {
     expect(got.solanaUrl).toBe(saleUrl(sale))
   })
 
+  it('uses only characters chat apps keep inside a link (no spaces, no % escapes)', () => {
+    const link = shareLink({ ...sale, label: 'Mama Ngozi & Sons ₦ Ọ́jà' })
+    expect(link.split('#')[1]).toMatch(/^[A-Za-z0-9=&._~-]+$/)
+    const got = parsePayLink(new URL(link).hash)
+    expect(got.ok && got.label).toBe('Mama Ngozi & Sons ₦ Ọ́jà')
+  })
+
   it('carries USDT with its own mint', () => {
     const got = parsePayLink(new URL(shareLink({ ...sale, coin: 'USDT' })).hash)
     expect(got.ok && got.coin).toBe('USDT')
@@ -36,7 +43,7 @@ describe('parsePayLink refuses a link it cannot vouch for', () => {
   const good = new URL(shareLink(sale)).hash
   const swap = (k: string, v: string) => {
     const p = new URLSearchParams(good.slice(1))
-    p.set(k, v)
+    p.set(k, k === 'l' ? encodeLabel(v) : v)
     return '#' + p.toString()
   }
   it.each([
