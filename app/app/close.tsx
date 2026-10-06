@@ -6,16 +6,20 @@ import { useSendRewards } from '@/hooks/use-close-day'
 import { quoteUsdcToSkr } from '@/core/jupiter'
 import { useDollarBalance } from '@/hooks/use-balance'
 import { useNow } from '@/hooks/use-now'
+import { address } from '@solana/kit'
+import { solShortfall } from '@/core/fees'
+import { useRpc } from '@/hooks/use-rpc'
 import { useShopWallet } from '@/hooks/use-shop-wallet'
 import { useStore } from '@/state/store'
 import { copy } from '@/ui/copy'
-import { coins, naira, short, usd } from '@/ui/format'
+import { coins, naira, short, sol, usd } from '@/ui/format'
 import { Banner, Body, Button, Line, Meta, Screen, Slip, Title } from '@/ui/kit'
 import { t } from '@/ui/theme'
 
 export default function Close() {
   const { data, update } = useStore()
   const { address: shop, canSign } = useShopWallet()
+  const rpc = useRpc()
   const usdc = useDollarBalance(shop, 'USDC')
   const c = useCloseDayData(useNow(60000))
   const { step, setStep, send, resuming } = useSendRewards(shop, data.shop?.name ?? '')
@@ -44,6 +48,9 @@ export default function Close() {
   const onSend = async () => {
     setError(null)
     if (!resuming && usdc.data !== undefined && usdc.data < total) return setError(copy.rewardsLowUsdc(usd(total)))
+    // the swap and each new SKR account cost SOL; check before the wallet opens
+    const missing = shop ? await solShortfall(rpc, address(shop), true).catch(() => 0n) : 0n
+    if (missing > 0n) return setError(copy.needSol(sol(missing)))
     try {
       await send(eligible)
     } catch (e) {

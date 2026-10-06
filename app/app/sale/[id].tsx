@@ -7,12 +7,13 @@ import { COINS } from '@/core/constants'
 import { findPriorRefund } from '@/core/refund-check'
 import { transferIx } from '@/core/tokens'
 import { useDollarBalance } from '@/hooks/use-balance'
+import { solShortfall } from '@/core/fees'
 import { useRpc } from '@/hooks/use-rpc'
 import { useShopWallet } from '@/hooks/use-shop-wallet'
 import { useStore } from '@/state/store'
 import { refundAmount } from '@/state/refund'
 import { copy } from '@/ui/copy'
-import { coins, hhmm, naira, rateText, short, solscan } from '@/ui/format'
+import { coins, hhmm, naira, rateText, short, sol, solscan } from '@/ui/format'
 import { Banner, Body, Button, Line, Meta, Screen, Slip, Title } from '@/ui/kit'
 
 const REWARD_TEXT: Record<string, string> = {
@@ -46,6 +47,8 @@ export default function SaleDetail() {
         patchSale(sale.id, { state: 'refunded', refundSig: prior })
         return setMsg({ text: copy.refundAlready, tone: 'info' })
       }
+      const missing = await solShortfall(rpc, address(shop!))
+      if (missing > 0n) return setMsg({ text: copy.needSol(sol(missing)), tone: 'danger' })
       const ix = await transferIx({ from: address(shop!), to: address(sale.payer!), mint: COINS[sale.coin].mint, decimals: 6, amount, createTo: true })
       const sig = await sendTransactions(ix)
       patchSale(sale.id, { state: 'refunded', refundSig: sig, reward: sale.reward === 'pending' ? 'none' : sale.reward })

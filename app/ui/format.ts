@@ -22,3 +22,6 @@ export function short(addr?: string): string {
 export function solscan(sig: string, devnet = false): string {
   return `https://solscan.io/tx/${sig}${devnet ? '?cluster=devnet' : ''}`
 }
+
+/** Lamports as SOL with 4 decimals, rounded up, for "add at least" messages. */
+export const sol = (lamports: bigint) => (Math.ceil(Number(lamports) / 1e5) / 1e4).toFixed(4)
