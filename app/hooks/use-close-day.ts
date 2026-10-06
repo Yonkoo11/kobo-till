@@ -1,5 +1,5 @@
 import { address, Rpc, Signature, SolanaRpcApi } from '@solana/kit'
-import { useMobileWallet } from '@wallet-ui/react-native-kit'
+import { useFreshSend } from '@/hooks/use-fresh-send'
 import { useCallback, useEffect, useState } from 'react'
 import { SKR } from '@/core/constants'
 import { quoteUsdcToSkr, swapTransaction } from '@/core/jupiter'
@@ -56,7 +56,7 @@ const toSaved = (sig: string, minOut: bigint, lines: RewardLine[]): SavedSwap =>
  */
 export function useSendRewards(shop: string | null, shopName: string) {
   const rpc = useRpc()
-  const { signAndSendTransactions, sendTransactions } = useMobileWallet()
+  const { sendInstructions, sendBuilt } = useFreshSend()
   const { data, update } = useStore()
   const [step, setStep] = useState<CloseStep>('idle')
   const payLines = async (saved: SavedSwap) => {
@@ -70,7 +70,7 @@ export function useSendRewards(shop: string | null, shopName: string) {
         ix.push(...(await transferIx({ from: address(shop!), to: address(l.payer), mint: SKR.mint, decimals: SKR.decimals, amount, createTo: false })))
       }
       const { getAddMemoInstruction } = await import('@solana-program/memo')
-      const sig = await sendTransactions([...ix, getAddMemoInstruction({ memo: `Kobo reward from ${shopName}` })])
+      const sig = await sendInstructions([...ix, getAddMemoInstruction({ memo: `Kobo reward from ${shopName}` })])
       markSent(update, batch.map((b) => b.l), sig)
     }
   }
@@ -82,10 +82,10 @@ export function useSendRewards(shop: string | null, shopName: string) {
         setStep('quoting')
         const quote = await quoteUsdcToSkr(total)
         setStep('approving')
-        const tx = await swapTransaction(quote, address(shop!))
-        const [swapSig] = (await signAndSendTransactions([tx], 0n)) as unknown as string[]
-        await waitConfirmed(rpc, String(swapSig))
-        saved = toSaved(String(swapSig), quote.minOut, eligible)
+        // The swap is built once the wallet is ready, so Jupiter's blockhash is fresh when the shop approves.
+        const swapSig = await sendBuilt((owner) => swapTransaction(quote, owner))
+        await waitConfirmed(rpc, swapSig)
+        saved = toSaved(swapSig, quote.minOut, eligible)
         const s = saved
         update((d) => ({ ...d, rewardSwap: s }))
       }
@@ -95,7 +95,7 @@ export function useSendRewards(shop: string | null, shopName: string) {
       setStep('done')
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rpc, shop, shopName, data.rewardSwap, signAndSendTransactions, sendTransactions, update],
+    [rpc, shop, shopName, data.rewardSwap, sendInstructions, sendBuilt, update],
   )
   return { step, setStep, send, resuming: !!data.rewardSwap }
 }

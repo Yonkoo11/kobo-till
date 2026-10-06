@@ -1,5 +1,4 @@
 import { address } from '@solana/kit'
-import { useMobileWallet } from '@wallet-ui/react-native-kit'
 import { useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Alert, Linking, View } from 'react-native'
@@ -16,6 +15,7 @@ import { refundAmount } from '@/state/refund'
 import { copy } from '@/ui/copy'
 import { coins, hhmm, naira, rateText, short, sol, solscan } from '@/ui/format'
 import { Banner, Body, Button, Line, Meta, Screen, Slip, Title } from '@/ui/kit'
+import { useFreshSend } from '@/hooks/use-fresh-send'
 
 const REWARD_TEXT: Record<string, string> = {
   pending: copy.paidSeekerBadge,
@@ -29,7 +29,7 @@ export default function SaleDetail() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { data, patchSale } = useStore()
   const rpc = useRpc()
-  const { sendTransactions } = useMobileWallet()
+  const { sendInstructions } = useFreshSend()
   const { address: shop, canSign } = useShopWallet()
   const sale = data.sales.find((s) => s.id === id)
   const balance = useDollarBalance(shop, sale?.coin)
@@ -51,7 +51,7 @@ export default function SaleDetail() {
       const missing = await solShortfall(rpc, address(shop!))
       if (missing > 0n) return setMsg({ text: copy.needSol(sol(missing)), tone: 'danger' })
       const ix = await transferIx({ from: address(shop!), to: address(sale.payer!), mint: COINS[sale.coin].mint, decimals: 6, amount, createTo: true })
-      const sig = await sendTransactions(ix)
+      const sig = await sendInstructions(ix)
       patchSale(sale.id, { state: 'refunded', refundSig: sig, reward: sale.reward === 'pending' ? 'none' : sale.reward })
       setMsg({ text: copy.refundDone(coins(amount), sale.coin, short(sale.payer)), tone: 'info' })
     } catch (e) {

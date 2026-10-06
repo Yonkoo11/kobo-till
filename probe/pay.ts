@@ -9,7 +9,7 @@ const RPC = process.env.KOBO_TEST_RPC || 'http://127.0.0.1:8899'
 if (!/127\.0\.0\.1|localhost|devnet/.test(RPC)) throw new Error('test networks only')
 const rpc = createSolanaRpc(RPC)
 const send = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions: createSolanaRpcSubscriptions(RPC.replace(/^http/, 'ws').replace(/:(\d+)$/, (_, p) => ':' + (Number(p) + 1))) })
-const cfg = JSON.parse(readFileSync(new URL('./.localnet.json', import.meta.url), 'utf8'))
+const cfg = JSON.parse(readFileSync(new URL(/devnet/.test(RPC) ? './.devnet.json' : './.localnet.json', import.meta.url), 'utf8'))
 const payer = await createKeyPairSignerFromPrivateKeyBytes(new Uint8Array(cfg.seed))
 
 const url = new URL(arg('url').replace('solana:', 'solana://'))
@@ -20,7 +20,9 @@ const reference = address(url.searchParams.get('reference')!)
 const [from] = await findAssociatedTokenPda({ owner: payer.address, mint, tokenProgram: TOKEN_PROGRAM_ADDRESS })
 const [to] = await findAssociatedTokenPda({ owner: recipient, mint, tokenProgram: TOKEN_PROGRAM_ADDRESS })
 const transfer = getTransferCheckedInstruction({ source: from, mint, destination: to, authority: payer, amount: units, decimals: 6 })
-const withRef = { ...transfer, accounts: [...transfer.accounts, { address: reference, role: AccountRole.READONLY }] }
+// --no-ref pays like Phantom does: the coin and the amount, without the sale's reference key
+const noRef = process.argv.includes('--no-ref')
+const withRef = noRef ? transfer : { ...transfer, accounts: [...transfer.accounts, { address: reference, role: AccountRole.READONLY }] }
 const { value: bh } = await rpc.getLatestBlockhash().send()
 const msg = pipe(
   createTransactionMessage({ version: 0 }),
@@ -30,4 +32,4 @@ const msg = pipe(
 )
 const signed = await signTransactionMessageWithSigners(msg)
 await send(signed as never, { commitment: 'confirmed' })
-console.log(`PAID ${Number(units) / 1e6} test-USDC to ${recipient} ref ${reference} sig ${getSignatureFromTransaction(signed)}`)
+console.log(`PAID ${Number(units) / 1e6} test-USDC to ${recipient} ref ${noRef ? 'none' : reference} sig ${getSignatureFromTransaction(signed)}`)

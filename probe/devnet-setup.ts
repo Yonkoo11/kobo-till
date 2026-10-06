@@ -24,8 +24,18 @@ async function tx(payer: any, ixs: any[]) {
 const saved = existsSync(FILE) ? JSON.parse(readFileSync(FILE, 'utf8')) : null
 const seed = saved ? new Uint8Array(saved.seed) : new Uint8Array(randomBytes(32))
 const payer = await createKeyPairSignerFromPrivateKeyBytes(seed)
-if (!saved) {
-  await airdropFactory({ rpc, rpcSubscriptions: subs })({ recipientAddress: payer.address, lamports: lamports(100_000_000n), commitment: 'confirmed' })
+if (!saved?.mint) {
+  // The public devnet faucet is often rate-limited. Then the seed is saved and the script asks for
+  // test SOL to be sent to the payer by hand; rerun it once the SOL is there.
+  if ((await rpc.getBalance(payer.address).send()).value < 20_000_000n) {
+    try {
+      await airdropFactory({ rpc, rpcSubscriptions: subs })({ recipientAddress: payer.address, lamports: lamports(100_000_000n), commitment: 'confirmed' })
+    } catch {
+      writeFileSync(FILE, JSON.stringify({ seed: Array.from(seed), payerAddress: payer.address }))
+      console.log(`airdrop refused: send 0.03 test SOL to ${payer.address}, then run this again`)
+      process.exit(2)
+    }
+  }
   const mint = await generateKeyPairSigner()
   const space = BigInt(getMintSize())
   const rent = await rpc.getMinimumBalanceForRentExemption(space).send()

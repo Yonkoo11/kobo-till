@@ -13,7 +13,8 @@ export class AppConfig {
   // for the app's signing key (seen on Phantom 2026-10-05). Publish step: GitHub Pages for the repo.
   static identity: AppIdentity = { name: 'Kobo', uri: 'https://yonkoo11.github.io/kobo-till', icon: 'favicon.png' }
   static networks: SolanaCluster[] = [
-    ...(TEST_RPC ? [createSolanaLocalnet({ url: TEST_RPC })] : []),
+    // A test build on devnet says so to the wallet: test wallets refuse to send on solana:localnet.
+    ...(TEST_RPC ? [/devnet/.test(TEST_RPC) ? createSolanaDevnet({ url: TEST_RPC }) : createSolanaLocalnet({ url: TEST_RPC })] : []),
     createSolanaMainnet({ url: MAINNET_RPC }),
     createSolanaDevnet({ url: 'https://api.devnet.solana.com' }),
   ]
