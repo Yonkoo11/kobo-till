@@ -184,10 +184,11 @@ All money logic lives in `app/core/` with no screen code in it, which is why the
 | Paid notification while the till is closed | Real on an emulator: the notification arrived after the background check ran. Android decides when that check runs, at most every 15 minutes, so a closed till can be up to 15 minutes late. With the till open, Paid shows within seconds. |
 | Printed receipt | The 58 mm receipt renders and its QR decodes to the Solscan link. Not yet printed on a physical printer. |
 | Underpaid, part payments, refund maths | Run on a local Solana network only. |
-| Refunds and Seeker rewards signed by a real wallet | Not done. A first mainnet refund failed because the shop wallet held USDC but no SOL for the network fee; Kobo now checks this first and says how much SOL to add. |
+| Refund signed by a wallet | Real on devnet: Solana Mobile's test wallet signed and sent a 0.76 test-coin refund ([Solscan](https://solscan.io/tx/5CKfPGHnWd7QLJawBX5v7WRCqWUehtqM6wE4UzmZUVze9fNb4tB2ETvFygLhg5zEtoBYfwp8svzYQbY37L2A4fKx?cluster=devnet)). Not yet on mainnet with Phantom. Two mainnet attempts failed first: the shop wallet had no SOL for the fee (Kobo now checks and says how much to add), then the approval outlived the transaction's one-minute lifetime (Kobo now fetches that lifetime only after the wallet has opened). |
+| Seeker rewards signed by a real wallet | Not done. The swap needs Jupiter on mainnet and a customer with a Seeker Genesis Token. |
 | Solflare and the Seeker wallet | Not yet tested. |
 | Tap to pay (NFC) | Not built. |
-| Wallet identity check | The identity file is now served at the site's root domain, and Google's Digital Asset Links check confirms it for the release app. Phantom still showed "identity could not be verified" right after; not yet re-tested. |
+| Wallet identity check | Not passing yet. Google's Digital Asset Links check confirms the identity file for the release app, but Solana Mobile's verification code also requires the file to be served as exactly `application/json`, and GitHub Pages adds `; charset=utf-8`. Solana Mobile's test wallet reports "Verification failed" for that reason, and Phantom shows "identity could not be verified". Fix: serve the file from a host that sets the exact type. |
 | A Kobo-made exchange rate | Not claimed. Kobo shows public rates and the shop's own adjustment; it never sets a rate, holds money or converts it. |
 | Legal status in Nigeria | Not claimed. Whether non-custodial till software needs a licence under the Investments and Securities Act 2025 is a question for a lawyer. |
 | Shop demand | Not claimed yet. No numbers here until conversations with shops exist. |
