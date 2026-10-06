@@ -8,6 +8,7 @@ import { useDollarBalance } from '@/hooks/use-balance'
 import { useNow } from '@/hooks/use-now'
 import { address } from '@solana/kit'
 import { solShortfall } from '@/core/fees'
+import { walletFailure } from '@/core/wallet-error'
 import { useRpc } from '@/hooks/use-rpc'
 import { useShopWallet } from '@/hooks/use-shop-wallet'
 import { useStore } from '@/state/store'
@@ -55,7 +56,9 @@ export default function Close() {
       await send(eligible)
     } catch (e) {
       setStep('error')
-      setError(String(e).includes('quote') ? copy.quoteFailed : copy.rewardsFailed)
+      console.warn('kobo rewards failed:', String((e as Error)?.message ?? e))
+      const kind = walletFailure(e)
+      setError(String(e).includes('quote') ? copy.quoteFailed : kind === 'other' ? copy.rewardsFailed : copy.walletFailure[kind])
     }
   }
 

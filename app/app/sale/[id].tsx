@@ -8,6 +8,7 @@ import { findPriorRefund } from '@/core/refund-check'
 import { transferIx } from '@/core/tokens'
 import { useDollarBalance } from '@/hooks/use-balance'
 import { solShortfall } from '@/core/fees'
+import { walletFailure } from '@/core/wallet-error'
 import { useRpc } from '@/hooks/use-rpc'
 import { useShopWallet } from '@/hooks/use-shop-wallet'
 import { useStore } from '@/state/store'
@@ -53,9 +54,12 @@ export default function SaleDetail() {
       const sig = await sendTransactions(ix)
       patchSale(sale.id, { state: 'refunded', refundSig: sig, reward: sale.reward === 'pending' ? 'none' : sale.reward })
       setMsg({ text: copy.refundDone(coins(amount), sale.coin, short(sale.payer)), tone: 'info' })
-    } catch {
+    } catch (e) {
+      console.warn('kobo refund failed:', String((e as Error)?.message ?? e)) // readable in the device log
       const low = balance.data !== undefined && balance.data < amount
-      setMsg({ text: low ? copy.refundLowBalance(sale.coin, coins(amount)) : copy.refundFailed, tone: 'danger' })
+      const kind = walletFailure(e)
+      const text = low ? copy.refundLowBalance(sale.coin, coins(amount)) : kind === 'other' ? copy.refundFailed : copy.walletFailure[kind]
+      setMsg({ text, tone: 'danger' })
     } finally {
       setBusy(false)
     }

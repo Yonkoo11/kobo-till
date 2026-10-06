@@ -70,6 +70,11 @@ export const copy = {
   refund: 'Refund',
   refundOpening: 'Opening your wallet…',
   refundFailed: 'Refund not sent. Nothing left your wallet.',
+  walletFailure: {
+    cancelled: 'Cancelled in the wallet. Nothing was sent.',
+    expired: 'The approval took too long and Solana rejected it. Nothing was sent. Try again and approve within a minute.',
+    'no-sol': "Your wallet needs a little SOL to pay Solana's network fee. Add some SOL, then try again. Nothing was sent.",
+  } as const,
   needSol: (sol: string) => `Your wallet needs a little SOL to pay Solana's network fee. Add at least ${sol} SOL (about one US cent) to this wallet, then try again. Nothing was sent.`,
   refundLowBalance: (coin: string, coins: string) => `Not enough ${coin} in the shop wallet to refund ${coins}.`,
   refundDone: (coins: string, coin: string, payer: string) => `Refunded ${coins} ${coin} to ${payer}`,
