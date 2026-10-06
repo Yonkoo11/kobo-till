@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.kobotill.app",
+      "sha256_cert_fingerprints": [
+        "B8:80:C2:09:DC:1E:4C:EE:CC:DC:F7:6B:B5:97:68:80:7B:E4:7C:9C:7D:61:92:58:87:1B:44:EF:40:31:D4:2D"
+      ]
+    }
+  }
+]
