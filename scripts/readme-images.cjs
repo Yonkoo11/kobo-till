@@ -19,8 +19,8 @@ const font = (w, f) => `@font-face{font-family:F;font-weight:${w};src:url("file:
 const css = `
 ${font(400, 'FamiljenGrotesk_400Regular.ttf')}${font(500, 'FamiljenGrotesk_500Medium.ttf')}${font(600, 'FamiljenGrotesk_600SemiBold.ttf')}
 *{box-sizing:border-box;margin:0}
-body{background:#ECEEEB;font-family:F,system-ui,sans-serif;color:#151714}
-.card{display:inline-flex;gap:56px;padding:48px 56px 40px;background:#ECEEEB;align-items:flex-start}
+body{background:transparent;font-family:F,system-ui,sans-serif;color:#151714}
+.card{display:inline-flex;gap:56px;padding:48px 56px 40px;background:#ECEEEB;align-items:flex-start;border-radius:28px}
 .item{display:flex;flex-direction:column;align-items:center;gap:18px;width:${W}px}
 .screen{width:${W}px;height:${Math.round(W * (2400 / 1080) * (1 - CROP))}px;border-radius:30px;overflow:hidden;
   box-shadow:0 0 0 1px rgba(21,23,20,.10),0 24px 48px -24px rgba(21,23,20,.45);background:#fff}
@@ -58,7 +58,7 @@ const pictures = {
     fs.unlinkSync(tmp)
     await page.evaluate(() => document.fonts.ready)
     const el = await page.$('.card')
-    await el.screenshot({ path: path.join(OUT, `${name}.png`) })
+    await el.screenshot({ path: path.join(OUT, `${name}.png`), omitBackground: true }) // rounded card, transparent corners
     console.log(`wrote assets/readme/${name}.png`)
   }
   await browser.close()

@@ -25,9 +25,16 @@ Built for Clock In (Solana Mobile x Radiants).
 
 *A 68-second walk through one real ₦150 sale on Solana mainnet, 2026-10-05: [assets/media/kobo-demo.mp4](assets/media/kobo-demo.mp4). Both phones are Android emulators with Google Play, the shop running Kobo and the customer running Phantom. The shop name is a test name.*
 
-| The customer's side: Phantom opens the request with SOL pre-filled, and the payer picks USDC | Today's roll: every sale with its amount, payer and status, and Close the day | A payment link opened on a phone: the amount, a button into the wallet, and the QR for another phone |
-|:---:|:---:|:---:|
-| <img src="assets/readme/phantom.png" alt="Phantom's review screen with the Payment Method sheet open: Cash, SOL, USDC" width="250"> | <img src="assets/readme/today.png" alt="Kobo's Today screen: ₦150 today, one paid sale, Close the day" width="250"> | <img src="assets/readme/paypage.png" alt="Kobo's pay page: 0.12 USDC requested, Pay with your Solana wallet, a note to pay in USDC, the address, the QR" width="250"> |
+<table>
+<tr>
+<th width="50%">The customer's side: Phantom opens the request with SOL pre-filled; the payer switches to USDC</th>
+<th width="50%">Today's roll: each sale with amount, payer and status, then Close the day</th>
+</tr>
+<tr>
+<td align="center"><img src="assets/readme/phantom.png" alt="Phantom's review screen with the Payment Method sheet open: Cash, SOL, USDC" width="280"></td>
+<td align="center"><img src="assets/readme/today.png" alt="Kobo's Today screen: ₦150 today, one paid sale, Close the day" width="280"></td>
+</tr>
+</table>
 
 ---
 
