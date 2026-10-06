@@ -32,7 +32,7 @@ const slides = [
     title: 'Type the price. Show the QR. See Paid. Close the day.',
     steps: [
       { n: '1', head: 'Type the price in naira', body: 'Kobo pulls the naira rate from two public sources and works out the USDC itself, rounded up to the cent.' },
-      { n: '2', head: 'Show one QR', body: 'A Solana Pay link with the amount, the USDC coin and a fresh one-time reference for this sale. The customer pays from a Solana wallet. The rate is locked the moment the QR appears.' },
+      { n: '2', head: 'Show one QR', body: 'A Solana Pay link with the amount, the USDC coin and a fresh one-time reference for this sale. The rate is locked the moment the QR appears. A customer on WhatsApp gets the same request as a link.' },
       { n: '3', head: 'See Paid', body: 'Kobo watches Solana for that reference, or for that exact amount when the wallet drops it, reads how much USDC the shop actually gained, and prints the receipt: Paid, Underpaid or Overpaid.' },
       { n: '4', head: 'Close the day', body: 'Every sale on one roll. At close, customers who paid from a Seeker phone are lined up for an SKR reward in one batch.' },
     ],

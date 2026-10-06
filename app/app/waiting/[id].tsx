@@ -9,6 +9,7 @@ import { useLastCheck, useOnline } from '@/hooks/online'
 import { useNow } from '@/hooks/use-now'
 import { createSale, newReference, saleUrl } from '@/core/sale'
 import { lagosDay } from '@/core/rewards'
+import { shareLink } from '@/core/share'
 import { useStore } from '@/state/store'
 import { toSale } from '@/state/convert'
 import { StoredSale } from '@/state/types'
@@ -63,9 +64,16 @@ function WaitingView({ sale, onCancel, twins }: { sale: StoredSale; onCancel: ()
       {long ? <Banner text={copy.waitingLong(hhmm(sale.createdAt))} tone="info" /> : null}
       {twins ? <Banner text={copy.sameAmountNote} tone="info" /> : null}
       <View style={{ flex: 1 }} />
-      <Button title={copy.cancel} kind="secondary" onPress={onCancel} />
+      <Button title={copy.sharePayLink} kind="secondary" onPress={() => sharePayLink(sale)} />
+      <Button title={copy.cancel} kind="link" onPress={onCancel} />
     </Screen>
   )
+}
+
+// For a customer who is not at the counter (WhatsApp, Instagram): a web link to the pay page, which opens their wallet.
+function sharePayLink(sale: StoredSale) {
+  const link = shareLink(toSale(sale))
+  Share.share({ message: copy.payLinkText(sale.label, naira(sale.naira), coins(sale.expected), sale.coin, hhmm(sale.createdAt), link) }).catch(() => undefined)
 }
 
 function PaidView({ sale }: { sale: StoredSale }) {

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>Pay with Kobo</title>
+<link rel="icon" href="../favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #ECEEEB; --slip: #FFFFFF; --ink1: #151714; --ink2: rgba(21,23,20,0.62);
+    --rule: rgba(21,23,20,0.12); --accent: #00774A; --accent-soft: #E5F2EC; --warn: #8A5300; --warn-soft: #FFF3DC;
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink1); font: 400 16px/24px "Familjen Grotesk", system-ui, sans-serif; }
+  main { max-width: 420px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 16px; }
+  section { display: flex; flex-direction: column; }
+  .name { font-weight: 600; font-size: 20px; line-height: 28px; }
+  .slip { background: var(--slip); border-radius: 4px 4px 0 0; padding: 24px 16px 28px; position: relative;
+    box-shadow: 0 2px 8px rgba(21,23,20,0.10); display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+  .slip::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 0h12L6 6z' fill='%23fff'/%3E%3C/svg%3E") 0 0 / 12px 6px repeat-x; }
+  .gap { height: 16px; }
+  .meta { font-size: 14px; line-height: 20px; color: var(--ink2); }
+  .amount { font-weight: 600; font-size: 40px; line-height: 46px; letter-spacing: -0.8px; }
+  .qr { width: 220px; height: 220px; margin: 8px 0; }
+  .qr svg { width: 100%; height: 100%; display: block; }
+  .pay { display: flex; align-items: center; justify-content: center; min-height: 56px; border-radius: 12px; background: var(--accent);
+    color: #fff; font-weight: 500; font-size: 18px; text-decoration: none; transition: opacity 160ms var(--ease); }
+  .pay:active { opacity: 0.86; }
+  .pay:focus-visible { outline: 3px solid var(--ink1); outline-offset: 3px; }
+  .note { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 12px 16px; font-size: 14px; line-height: 20px; }
+  .addr { font-size: 14px; line-height: 20px; color: var(--ink2); }
+  .addr b { color: var(--ink1); font-weight: 500; }
+  footer { font-size: 14px; line-height: 20px; color: var(--ink2); }
+  footer a { color: var(--accent); }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { .pay { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="name">Kobo</div>
+
+  <section id="ok" hidden>
+    <div class="slip">
+      <div class="meta" id="shop"></div>
+      <div class="amount" id="amount"></div>
+      <div class="meta" id="naira"></div>
+    </div>
+    <div class="gap"></div>
+    <a class="pay" id="pay" href="#">Pay with your Solana wallet</a>
+    <div class="gap"></div>
+    <div class="note" id="coinNote"></div>
+    <div class="gap"></div>
+    <div class="slip">
+      <div class="meta">Paying from another phone? Scan this with its Solana wallet.</div>
+      <div class="qr" id="qr" role="img" aria-label="QR code for this payment"></div>
+    </div>
+    <div class="gap"></div>
+    <div class="addr">The money goes straight to the shop's own wallet, <b id="to"></b>. Kobo never holds it, and the shop's till confirms the payment on Solana.</div>
+  </section>
+
+  <section id="bad" hidden>
+    <div class="slip">
+      <div class="amount" style="font-size: 28px; line-height: 34px">This payment link is broken</div>
+      <div class="meta" id="badWhy"></div>
+    </div>
+  </section>
+
+  <footer>Kobo is an open-source till for shops. <a href="https://github.com/Yonkoo11/kobo-till">How it works</a></footer>
+</main>
+<script type="module" src="page.js"></script>
+</body>
+</html>
