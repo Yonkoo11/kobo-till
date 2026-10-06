@@ -67,9 +67,9 @@ A till on the shopkeeper's Android phone that watches Solana for each sale. The 
 
 </div>
 
-1. **Type price.** The shopkeeper types naira. Kobo fetches the rate from two public sources (open.er-api.com and CoinGecko), applies the shop's own adjustment and works out the USDC, rounded up to the cent.
-2. **Show QR.** A Solana Pay link with the amount, the USDC coin and a fresh one-time reference for this sale. The rate is locked when the QR appears.
-3. **See Paid.** Kobo looks for the payment on Solana, reads how much USDC the shop's account actually gained, and prints a receipt: Paid, Underpaid or Overpaid, with a Solscan link. The money goes straight to the shop's own wallet; Kobo holds no key and converts nothing.
+1. **Type price.** The shopkeeper types naira, and **+ Item** adds one price to the next for a basket. Kobo fetches the rate from two public sources (open.er-api.com and CoinGecko), applies the shop's own adjustment and works out the USDC, rounded up to the cent.
+2. **Show QR.** A Solana Pay link with the amount, the USDC coin and a fresh one-time reference for this sale. The rate is locked when the QR appears. While another sale in the same coin is still waiting, Kobo adds up to 0.009999 USDC so every open sale owes a different amount; wallets that drop the reference can then still be matched to the right sale.
+3. **See Paid.** Kobo looks for the payment on Solana, reads how much USDC the shop's account actually gained, and shows a receipt: Paid, Underpaid or Overpaid, with the items and a Solscan link. The receipt can be shared or printed on a 58 mm receipt printer through Android's print service. If the till is in the background when the money lands, Android shows a "Paid ₦…" notification. The money goes straight to the shop's own wallet; Kobo holds no key and converts nothing.
 4. **Close the day.** Today lists every sale. At close, customers who paid from a Seeker phone are lined up for a small SKR reward, sent in one batch signed by the shop's wallet.
 
 The shop's wallet connects through Mobile Wallet Adapter. For a staff phone, View only mode takes payments into the owner's wallet with no wallet on the phone at all.
@@ -81,7 +81,7 @@ Many Nigerian shops sell in chats. A buyer's wallet is on the same phone as the 
 <tr>
 <td width="62%" valign="top">
 
-1. On the Waiting screen, **Send payment link** opens Android's share menu with a message and a web link.
+1. On the Waiting screen, **Send payment link** opens Android's share menu with a message and a web link. The link is valid for one hour; after that the page says it has expired.
 2. The link opens a static page, [docs/pay/](docs/pay/), served by GitHub Pages. It shows the amount, a button that opens the buyer's wallet with the payment filled in, and the same QR for paying from another device.
 3. The till matches the payment exactly as it does at the counter.
 
@@ -100,7 +100,7 @@ No wallet, no key and no phone needed. You need Node 26 and an internet connecti
 ```bash
 git clone https://github.com/Yonkoo11/kobo-till && cd kobo-till/app
 npm ci                                    # about 2 minutes
-npx vitest run                            # → Test Files 6 passed (6), Tests 56 passed (56)
+npx vitest run                            # → Test Files 10 passed (10), Tests 72 passed (72)
 cd .. && ln -s ../app/node_modules probe/node_modules
 T=app/node_modules/.bin/tsx
 
@@ -176,22 +176,25 @@ All money logic lives in `app/core/` with no screen code in it, which is why the
 | **Naira price to USDC QR** | Real. Unit tests, the mainnet check above, and the on-screen QR decoded to the expected link. |
 | **Reading real mainnet payments** | Real, including version 1 transactions (supported since 2026-10-04 after a check failed on one). |
 | **Seeker phone check** | Real on mainnet against the Solana Mobile docs' example owner. |
-| **Payment link and pay page** | Real. The page is live and rebuilds exactly the QR's Solana Pay link (16 tests). A first Telegram test cut the link at a space in the shop name; the name now travels in link-safe characters, not yet re-sent through Telegram. |
+| **Payment link and pay page** | Real. The page is live and rebuilds exactly the QR's Solana Pay link (16 tests). A first Telegram test cut the link at a space in the shop name. The name now travels in link-safe characters, and a link re-sent through Telegram on 2026-10-06 stayed whole and was paid. |
 | Phantom and the reference | Measured negative. Phantom keeps the coin and the amount from a Kobo link and pays exactly 0.12 USDC, but leaves the sale's one-time reference out of the transaction (seen 3 times, the last on 2026-10-06 from the live pay page: [Solscan](https://solscan.io/tx/3SFWF7r4spGYCJgxniqsXeDtEvDpu5oV2swKEvs2hLnajDktCHq3W1PoKUrf9Res5KRyHsNfwp6sJrkn92eUyezS)). Kobo matches those payments by exact amount. Phantom's camera scanner is not yet tested. |
 | The tap from a phone browser into a wallet | Real. On an emulator, the live pay page's button opened Phantom at "Review Send: 0.12 USDC" to the shop. |
 | Running on a physical Android phone | Not yet. Every run so far is on Android emulators (Google Play image, arm64). |
+| Unique amounts for open sales | Real. With one ₦150 sale waiting, a second one owed 0.120001 USDC; Phantom showed 0.120001, and the payment was matched to the second sale while the first stayed Waiting (emulators, mainnet, 2026-10-06). |
+| Paid notification while the till is closed | Real on an emulator: the notification arrived after the background check ran. Android decides when that check runs, at most every 15 minutes, so a closed till can be up to 15 minutes late. With the till open, Paid shows within seconds. |
+| Printed receipt | The 58 mm receipt renders and its QR decodes to the Solscan link. Not yet printed on a physical printer. |
 | Underpaid, part payments, refund maths | Run on a local Solana network only. |
-| Refunds and Seeker rewards signed by a real wallet | Not done. |
+| Refunds and Seeker rewards signed by a real wallet | Not done. A first mainnet refund failed because the shop wallet held USDC but no SOL for the network fee; Kobo now checks this first and says how much SOL to add. |
 | Solflare and the Seeker wallet | Not yet tested. |
 | Tap to pay (NFC) | Not built. |
-| Wallet identity check | Phantom shows "identity could not be verified" when the shop connects: the identity file must sit at the site's root domain, which a project page cannot serve. |
+| Wallet identity check | The identity file is now served at the site's root domain, and Google's Digital Asset Links check confirms it for the release app. Phantom still showed "identity could not be verified" right after; not yet re-tested. |
 | A Kobo-made exchange rate | Not claimed. Kobo shows public rates and the shop's own adjustment; it never sets a rate, holds money or converts it. |
 | Legal status in Nigeria | Not claimed. Whether non-custodial till software needs a licence under the Investments and Securities Act 2025 is a question for a lawyer. |
 | Shop demand | Not claimed yet. No numbers here until conversations with shops exist. |
 | Customers with the right wallet | Not assumed. Africa's largest stablecoin wallet, MiniPay, runs on Celo, not Solana. A Kobo QR needs USDC on Solana: Phantom, Solflare or the Seeker wallet. |
 
 ## Tech stack
-- **App:** Expo 57, React Native 0.86, expo-router, TypeScript · **Wallet:** Mobile Wallet Adapter (`@wallet-ui/react-native-kit`) · **Solana:** `@solana/kit` 7.1.1, Solana Pay transfer requests · **Pay page:** static HTML and JavaScript on GitHub Pages · **Tests:** 56 (Vitest), in CI · **Type:** Familjen Grotesk
+- **App:** Expo 57, React Native 0.86, expo-router, TypeScript · **Wallet:** Mobile Wallet Adapter (`@wallet-ui/react-native-kit`) · **Solana:** `@solana/kit` 7.1.1, Solana Pay transfer requests · **Pay page:** static HTML and JavaScript on GitHub Pages · **Tests:** 72 (Vitest), in CI · **Type:** Familjen Grotesk
 
 ## Project layout
 ```
@@ -223,9 +226,9 @@ An optional private RPC URL goes in `app/.env` (see `app/.env.example`). For a t
 
 ## Tests
 ```bash
-cd app && npx vitest run         # → Tests 56 passed (56)
+cd app && npx vitest run         # → Tests 72 passed (72)
 ```
-34 of the 56 are Kobo's own: 18 for the money logic (naira to coin rounding, the Solana Pay link, payment measurement, Paid/Underpaid/Overpaid, the rate adjustment, Seeker rewards) and 16 for the payment link and pay page (same link as the QR, refused coins and addresses, hidden characters in shop names). The rest come from the app template. They run on every push in [CI](.github/workflows/tests.yml).
+50 of the 72 are Kobo's own: 18 for the money logic (naira to coin rounding, the Solana Pay link, payment measurement, Paid/Underpaid/Overpaid, the rate adjustment, Seeker rewards), 4 for the unique amounts, 18 for the payment link and pay page (same link as the QR, refused coins and addresses, hidden characters in shop names, expiry), 2 for the network-fee check, 6 for reading wallet errors and 2 for the printed receipt. The rest come from the app template. They run on every push in [CI](.github/workflows/tests.yml).
 
 ## License
 Apache 2.0 ([LICENSE](LICENSE)). Kobo stores sales only on the shop's phone; it has no server.
