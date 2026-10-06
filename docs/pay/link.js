@@ -47,11 +47,12 @@ export function cleanLabel(raw) {
 }
 const AMOUNT = /^(0|[1-9]\d{0,9})(\.\d{1,6})?$/
 const NAIRA = /^[1-9]\d{0,11}$/
+const UNIX = /^[1-9]\d{8,10}$/
 
 /**
  * @param {string} hash location.hash, with or without the leading '#'
  * @returns {{ ok: true, recipient: string, amount: string, mint: string, coin: string, reference: string,
- *   label: string, naira: string, solanaUrl: string } | { ok: false, reason: string }}
+ *   label: string, naira: string, expiresAt: number | null, solanaUrl: string } | { ok: false, reason: string }}
  */
 export function parsePayLink(hash) {
   const p = new URLSearchParams(String(hash || '').replace(/^#/, ''))
@@ -61,12 +62,15 @@ export function parsePayLink(hash) {
   const reference = p.get('ref') || ''
   const naira = p.get('n') || ''
   const label = cleanLabel(decodeLabel(p.get('l')))
+  const x = p.get('x') || ''
   if (!isAddress32(recipient)) return { ok: false, reason: 'recipient' }
   if (!AMOUNT.test(amount) || Number(amount) <= 0) return { ok: false, reason: 'amount' }
   if (!Object.prototype.hasOwnProperty.call(MINTS, mint)) return { ok: false, reason: 'coin' }
   if (!isAddress32(reference)) return { ok: false, reason: 'reference' }
   if (naira && !NAIRA.test(naira)) return { ok: false, reason: 'naira' }
+  if (x && !UNIX.test(x)) return { ok: false, reason: 'expiry' }
+  const expiresAt = x ? Number(x) * 1000 : null
   const q = new URLSearchParams({ amount, 'spl-token': mint, reference, label, message: 'Kobo sale' })
   const solanaUrl = `solana:${recipient}?${q.toString().replace(/\+/g, '%20')}`
-  return { ok: true, recipient, amount, mint, coin: MINTS[mint], reference, label, naira, solanaUrl }
+  return { ok: true, recipient, amount, mint, coin: MINTS[mint], reference, label, naira, expiresAt, solanaUrl }
 }

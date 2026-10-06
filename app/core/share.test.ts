@@ -33,6 +33,13 @@ describe('shareLink', () => {
     expect(got.ok && got.label).toBe('Mama Ngozi & Sons ₦ Ọ́jà')
   })
 
+  it('carries an expiry time the page can read', () => {
+    const until = Date.UTC(2026, 9, 6, 12, 0, 0)
+    const got = parsePayLink(new URL(shareLink(sale, until)).hash)
+    expect(got.ok && got.expiresAt).toBe(until)
+    expect(parsePayLink(new URL(shareLink(sale)).hash)).toMatchObject({ ok: true, expiresAt: null })
+  })
+
   it('carries USDT with its own mint', () => {
     const got = parsePayLink(new URL(shareLink({ ...sale, coin: 'USDT' })).hash)
     expect(got.ok && got.coin).toBe('USDT')
@@ -54,6 +61,7 @@ describe('parsePayLink refuses a link it cannot vouch for', () => {
     ['m', 'JUNoB7xJmckDgFkbV9aV4AeSCEtx4TxkbvWgWqNPXrq', 'coin'],
     ['ref', '', 'reference'],
     ['n', '-5', 'naira'],
+    ['x', 'tomorrow', 'expiry'],
   ])('%s=%s -> %s', (k, v, reason) => {
     expect(parsePayLink(swap(k, v))).toEqual({ ok: false, reason })
   })

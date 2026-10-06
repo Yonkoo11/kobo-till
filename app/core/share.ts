@@ -3,12 +3,14 @@ import { formatCoins, Sale } from './sale'
 
 // The pay page lives on the project's GitHub Pages site (docs/pay/), the same site the wallet identity names.
 export const PAY_PAGE = 'https://yonkoo11.github.io/kobo-till/pay/'
+/** How long a shared link may be paid from the pay page. The till still records a payment that lands later. */
+export const LINK_LIFETIME_MS = 60 * 60 * 1000
 
 /**
  * A web link for sending a sale to a customer who is not at the counter (WhatsApp makes https tappable, not
  * solana:). Everything rides in the # fragment, which the browser never sends to the server.
  */
-export function shareLink(sale: Pick<Sale, 'recipient' | 'expected' | 'coin' | 'reference' | 'label' | 'naira'>): string {
+export function shareLink(sale: Pick<Sale, 'recipient' | 'expected' | 'coin' | 'reference' | 'label' | 'naira'>, expiresAt?: number): string {
   const p = new URLSearchParams({
     r: sale.recipient,
     a: formatCoins(sale.expected, COINS[sale.coin].decimals),
@@ -17,6 +19,7 @@ export function shareLink(sale: Pick<Sale, 'recipient' | 'expected' | 'coin' | '
     n: String(Math.round(sale.naira)),
     l: encodeLabel(Array.from(sale.label).slice(0, 40).join('')),
   })
+  if (expiresAt) p.set('x', String(Math.floor(expiresAt / 1000)))
   return `${PAY_PAGE}#${p.toString()}`
 }
 

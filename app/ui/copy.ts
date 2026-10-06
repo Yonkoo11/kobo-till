@@ -39,6 +39,8 @@ export const copy = {
   sameAmountNote: 'Two sales have the same amount. Waiting for the exact payment.',
   shareReceipt: 'Share receipt',
   sharePayLink: 'Send payment link',
+  linkValid: (hhmm: string) => `Payment link sent, valid until ${hhmm}`,
+  linkExpired: (hhmm: string) => `Payment link expired at ${hhmm}. Kobo still records a payment that arrives.`,
   payLinkText: (shop: string, naira: string, coins: string, coin: string, hhmm: string, url: string) =>
     `${shop}: please pay ₦${naira}, that is ${coins} ${coin} on Solana (rate locked at ${hhmm}). Pay here: ${url}`,
   newSale: 'New sale',

@@ -9,7 +9,7 @@ import { useLastCheck, useOnline } from '@/hooks/online'
 import { useNow } from '@/hooks/use-now'
 import { createSale, newReference, saleUrl } from '@/core/sale'
 import { lagosDay } from '@/core/rewards'
-import { shareLink } from '@/core/share'
+import { LINK_LIFETIME_MS, shareLink } from '@/core/share'
 import { useStore } from '@/state/store'
 import { toSale } from '@/state/convert'
 import { StoredSale } from '@/state/types'
@@ -39,6 +39,7 @@ export default function Waiting() {
 }
 
 function WaitingView({ sale, onCancel, twins }: { sale: StoredSale; onCancel: () => void; twins: boolean }) {
+  const { patchSale } = useStore()
   const { width } = useWindowDimensions()
   const size = Math.min(width - 64, 320)
   const online = useOnline()
@@ -63,17 +64,20 @@ function WaitingView({ sale, onCancel, twins }: { sale: StoredSale; onCancel: ()
       </View>
       {!online ? <Banner text={copy.waitingOffline} /> : null}
       {long ? <Banner text={copy.waitingLong(hhmm(sale.createdAt))} tone="info" /> : null}
+      {sale.linkUntil ? <Meta>{now > sale.linkUntil ? copy.linkExpired(hhmm(sale.linkUntil)) : copy.linkValid(hhmm(sale.linkUntil))}</Meta> : null}
       {twins ? <Banner text={copy.sameAmountNote} tone="info" /> : null}
       <View style={{ flex: 1 }} />
-      {!IS_TEST_BUILD ? <Button title={copy.sharePayLink} kind="secondary" onPress={() => sharePayLink(sale)} /> : null}
+      {!IS_TEST_BUILD ? <Button title={copy.sharePayLink} kind="secondary" onPress={() => sharePayLink(sale, patchSale)} /> : null}
       <Button title={copy.cancel} kind="link" onPress={onCancel} />
     </Screen>
   )
 }
 
 // For a customer who is not at the counter (WhatsApp, Instagram): a web link to the pay page, which opens their wallet.
-function sharePayLink(sale: StoredSale) {
-  const link = shareLink(toSale(sale))
+function sharePayLink(sale: StoredSale, patchSale: (id: string, p: Partial<StoredSale>) => void) {
+  const until = Date.now() + LINK_LIFETIME_MS
+  patchSale(sale.id, { linkUntil: until })
+  const link = shareLink(toSale(sale), until)
   Share.share({ message: copy.payLinkText(sale.label, naira(sale.naira), coins(sale.expected), sale.coin, hhmm(sale.createdAt), link) }).catch(() => undefined)
 }
 

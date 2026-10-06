@@ -34,6 +34,7 @@ export interface StoredSale {
   rewardSig?: string
   refundSig?: string
   parentId?: string
+  linkUntil?: number // set when the sale is sent as a payment link
 }
 
 export interface CachedRate {
