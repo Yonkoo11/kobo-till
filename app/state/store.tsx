@@ -2,7 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { EMPTY, KoboData, StoredSale } from './types'
 
-const KEY = 'kobo:v1'
+export const STORE_KEY = 'kobo:v1'
+const KEY = STORE_KEY
+
+// Set while the app's store is mounted, so a background check in the same JavaScript runtime patches the live state
+// instead of writing the saved copy underneath it (the next save would overwrite that write).
+export let livePatchSale: ((id: string, patch: Partial<StoredSale>) => void) | null = null
 
 interface StoreValue {
   ready: boolean
@@ -38,6 +43,12 @@ export function StoreProvider({ children }: PropsWithChildren) {
       setData((d) => ({ ...d, sales: d.sales.map((s) => (s.id === id ? { ...s, ...patch } : s)) })),
     [],
   )
+  useEffect(() => {
+    livePatchSale = patchSale
+    return () => {
+      livePatchSale = null
+    }
+  }, [patchSale])
   const value = useMemo(() => ({ ready, data, update, patchSale }), [ready, data, update, patchSale])
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }

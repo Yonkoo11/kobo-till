@@ -5,6 +5,7 @@ import { IS_TEST_BUILD } from '@/constants/app-config'
 import { CoinId } from '@/core/constants'
 import { createSale, newReference } from '@/core/sale'
 import { lagosDay } from '@/core/rewards'
+import { askForPaidAlerts } from '@/hooks/paid-alert'
 import { useRate } from '@/hooks/use-rate'
 import { useShopWallet } from '@/hooks/use-shop-wallet'
 import { useStore } from '@/state/store'
@@ -56,6 +57,7 @@ export default function Till() {
       ...(items.length ? { items: typed > 0 ? [...items, typed] : items } : {}),
     }
     update((d) => ({ ...d, sales: [stored, ...d.sales] }))
+    void askForPaidAlerts() // asks once; later calls return at once
     setAmount('')
     setItems([])
     router.push(`/waiting/${stored.id}`)

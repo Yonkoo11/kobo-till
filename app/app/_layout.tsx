@@ -1,14 +1,26 @@
 import { FamiljenGrotesk_400Regular, FamiljenGrotesk_500Medium, FamiljenGrotesk_600SemiBold, useFonts } from '@expo-google-fonts/familjen-grotesk'
-import { Stack } from 'expo-router'
+import * as Notifications from 'expo-notifications'
+import { router, Stack } from 'expo-router'
+import { useEffect } from 'react'
 import { StatusBar } from 'expo-status-bar'
 import 'react-native-reanimated'
 import { AppProviders } from '@/components/app-providers'
+import { startBackgroundCheck } from '@/hooks/background-check' // defines the background task at start-up
 import { SaleWatcher } from '@/hooks/sale-watcher'
 import { StoreProvider } from '@/state/store'
 import { t } from '@/ui/theme'
 
 export default function RootLayout() {
   const [fontsReady] = useFonts({ FamiljenGrotesk_400Regular, FamiljenGrotesk_500Medium, FamiljenGrotesk_600SemiBold })
+  useEffect(() => {
+    void startBackgroundCheck()
+    // Tapping a Paid notification opens that sale's receipt.
+    const sub = Notifications.addNotificationResponseReceivedListener((r) => {
+      const id = r.notification.request.content.data?.saleId
+      if (typeof id === 'string') router.push(`/waiting/${id}`)
+    })
+    return () => sub.remove()
+  }, [])
   if (!fontsReady) return null
   return (
     <AppProviders>

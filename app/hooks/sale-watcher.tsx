@@ -1,13 +1,11 @@
-import { address } from '@solana/kit'
 import { useEffect, useLayoutEffect, useRef } from 'react'
+import { AppState } from 'react-native'
+import { checkSale } from './check-sale'
+import { sendPaidAlert } from './paid-alert'
 import { TIMING } from '@/constants/app-config'
-import { findSale, SaleStatus } from '@/core/detect'
-import { findByAmount } from '@/core/match-amount'
-import { getSgtMint } from '@/core/sgt'
 import { useRpc } from '@/hooks/use-rpc'
 import { useStore } from '@/state/store'
 import { StoredSale } from '@/state/types'
-import { toSale } from '@/state/convert'
 import { markChecked, setOnline } from './online'
 
 /** Polls open sales in the background so a payment confirms even if the till screen was left. */
@@ -39,7 +37,7 @@ export function SaleWatcher() {
       const batch = slowDue ? open : open.slice(0, TIMING.maxFastSales)
       for (const s of batch) {
         if (stop) return
-        await checkOne(s, open)
+        await checkOne(s)
           .then(() => {
             setOnline(true)
             markChecked()
@@ -47,34 +45,13 @@ export function SaleWatcher() {
           .catch(() => setOnline(false)) // offline: try again next tick
       }
     }
-    const checkOne = async (s: StoredSale, open: StoredSale[]) => {
-      const sale = toSale(s)
-      const all = latest.current.sales
-      const usedSignatures = new Set(all.flatMap((o) => o.signatures ?? (o.signature ? [o.signature] : [])))
-      const otherReferences = new Set(open.filter((o) => o.id !== s.id).map((o) => o.reference))
-      let st: SaleStatus = await findSale(rpc, sale, { usedSignatures, otherReferences })
-      let matchedBy: 'reference' | 'amount' = 'reference'
-      const twin = open.some((o) => o.id !== s.id && o.coin === s.coin && o.expected === s.expected)
-      if (st.kind === 'waiting' && !twin) {
-        st = await findByAmount(rpc, sale, usedSignatures)
-        matchedBy = 'amount'
-      }
-      if (st.kind === 'waiting') return
-      const sgtMint = await getSgtMint(rpc, address(st.payer)).catch(() => null)
-      const rewards = (latest.current.shop?.rewardPct ?? 0) > 0
-      patchSale(s.id, {
-        state: st.kind,
-        matchedBy,
-        received: st.received.toString(),
-        payer: st.payer,
-        signature: st.signature,
-        signatures: st.signatures,
-        paidAt: Date.now(),
-        sgtMint,
-        reward: sgtMint && rewards ? 'pending' : 'none',
-      })
+    const checkOne = async (s: StoredSale) => {
+      const patch = await checkSale(rpc, s, latest.current)
+      if (!patch) return
+      patchSale(s.id, patch)
+      if (AppState.currentState !== 'active') void sendPaidAlert(s, patch) // shop is in WhatsApp, Telegram, or the phone is locked
       // Credit these signatures immediately so the next sale in this tick cannot reuse them.
-      latest.current = { ...latest.current, sales: latest.current.sales.map((o) => (o.id === s.id ? { ...o, signatures: st.signatures } : o)) }
+      latest.current = { ...latest.current, sales: latest.current.sales.map((o) => (o.id === s.id ? { ...o, ...patch } : o)) }
     }
     const id = setInterval(() => void tick(), TIMING.pollFastMs)
     return () => {
