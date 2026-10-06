@@ -51,7 +51,7 @@ export default function SaleDetail() {
       const missing = await solShortfall(rpc, address(shop!))
       if (missing > 0n) return setMsg({ text: copy.needSol(sol(missing)), tone: 'danger' })
       const ix = await transferIx({ from: address(shop!), to: address(sale.payer!), mint: COINS[sale.coin].mint, decimals: 6, amount, createTo: true })
-      const sig = await sendInstructions(ix)
+      const sig = await sendInstructions(ix, address(shop!))
       patchSale(sale.id, { state: 'refunded', refundSig: sig, reward: sale.reward === 'pending' ? 'none' : sale.reward })
       setMsg({ text: copy.refundDone(coins(amount), sale.coin, short(sale.payer)), tone: 'info' })
     } catch (e) {

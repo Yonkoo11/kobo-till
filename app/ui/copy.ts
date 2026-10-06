@@ -71,6 +71,7 @@ export const copy = {
   refundOpening: 'Opening your wallet…',
   refundFailed: 'Refund not sent. Nothing left your wallet. Try again, and approve in the wallet within a minute.',
   walletFailure: {
+    offline: 'The phone could not reach Solana. Nothing was sent. Check the internet connection and try again.',
     cancelled: 'Cancelled in the wallet. Nothing was sent.',
     expired: 'The approval took too long and Solana rejected it. Nothing was sent. Try again and approve within a minute.',
     'no-sol': "Your wallet needs a little SOL to pay Solana's network fee. Add some SOL, then try again. Nothing was sent.",

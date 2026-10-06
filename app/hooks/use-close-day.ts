@@ -70,7 +70,7 @@ export function useSendRewards(shop: string | null, shopName: string) {
         ix.push(...(await transferIx({ from: address(shop!), to: address(l.payer), mint: SKR.mint, decimals: SKR.decimals, amount, createTo: false })))
       }
       const { getAddMemoInstruction } = await import('@solana-program/memo')
-      const sig = await sendInstructions([...ix, getAddMemoInstruction({ memo: `Kobo reward from ${shopName}` })])
+      const sig = await sendInstructions([...ix, getAddMemoInstruction({ memo: `Kobo reward from ${shopName}` })], address(shop!))
       markSent(update, batch.map((b) => b.l), sig)
     }
   }
@@ -83,7 +83,7 @@ export function useSendRewards(shop: string | null, shopName: string) {
         const quote = await quoteUsdcToSkr(total)
         setStep('approving')
         // The swap is built once the wallet is ready, so Jupiter's blockhash is fresh when the shop approves.
-        const swapSig = await sendBuilt((owner) => swapTransaction(quote, owner))
+        const swapSig = await sendBuilt((owner) => swapTransaction(quote, owner), address(shop!))
         await waitConfirmed(rpc, swapSig)
         saved = toSaved(swapSig, quote.minOut, eligible)
         const s = saved
