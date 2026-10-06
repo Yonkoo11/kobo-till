@@ -35,6 +35,7 @@ export const copy = {
   paidFrom: (coins: string, coin: string, payer: string) => `${coins} ${coin} from ${payer}`,
   paidSeekerBadge: 'Seeker customer · reward at close',
   paidByAmountNote: 'Paid (matched by amount)',
+  uniqueAmountNote: 'A few extra digits keep this amount unique, so Kobo can tell this sale apart.',
   sameAmountNote: 'Two sales have the same amount. Waiting for the exact payment.',
   shareReceipt: 'Share receipt',
   sharePayLink: 'Send payment link',

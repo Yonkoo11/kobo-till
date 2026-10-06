@@ -34,7 +34,8 @@ export default function Till() {
 
   const charge = () => {
     if (!rate || !address || value <= 0) return
-    const sale = createSale({ naira: value, rate, coin, recipient: address as never, reference: newReference(randomBytes), label: data.shop!.name })
+    const owed = data.sales.filter((o) => o.state === 'waiting' && o.coin === coin).map((o) => BigInt(o.expected))
+    const sale = createSale({ naira: value, rate, coin, recipient: address as never, reference: newReference(randomBytes), label: data.shop!.name }, Date.now(), owed)
     const stored: StoredSale = {
       ...sale,
       recipient: address,

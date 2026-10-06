@@ -31,8 +31,23 @@ export function newReference(random: (b: Uint8Array) => Uint8Array): Address {
   return getAddressDecoder().decode(random(new Uint8Array(32)))
 }
 
-export function createSale(args: Omit<Sale, 'id' | 'expected' | 'createdAt'>, now = Date.now()): Sale {
-  const expected = nairaToBaseUnits(args.naira, args.rate, COINS[args.coin].decimals)
+/** Most base units Kobo will add to keep an amount unique: just under one cent (0.009999 of a 6-decimal coin). */
+export const MAX_NUDGE = 9999n
+
+/**
+ * Wallets such as Phantom drop the Solana Pay reference, so Kobo can only tell those payments apart by amount.
+ * Keep the plain amount when no open sale of the same coin owes it; otherwise add the fewest base units that make
+ * it unique. Throws only if 10,000 open sales share one cent amount.
+ */
+export function uniqueAmount(base: bigint, taken: Iterable<bigint>): bigint {
+  const used = new Set<bigint>(taken)
+  for (let k = 0n; k <= MAX_NUDGE; k++) if (!used.has(base + k)) return base + k
+  throw new Error('too many open sales share this amount')
+}
+
+/** `taken`: the expected amounts of open sales in the same coin. */
+export function createSale(args: Omit<Sale, 'id' | 'expected' | 'createdAt'>, now = Date.now(), taken: Iterable<bigint> = []): Sale {
+  const expected = uniqueAmount(nairaToBaseUnits(args.naira, args.rate, COINS[args.coin].decimals), taken)
   return { ...args, expected, id: args.reference, createdAt: now }
 }
 

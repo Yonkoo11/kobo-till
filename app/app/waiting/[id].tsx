@@ -55,6 +55,7 @@ function WaitingView({ sale, onCancel, twins }: { sale: StoredSale; onCancel: ()
         <Text style={s.amountLine}>₦{naira(sale.naira)} · {coins(sale.expected)} {sale.coin}</Text>
         <Meta>{copy.rateLocked(rateText(sale.rate), hhmm(sale.createdAt))}</Meta>
         <Meta>{copy.waitingScanHint}</Meta>
+        {BigInt(sale.expected) % 10000n !== 0n ? <Meta>{copy.uniqueAmountNote}</Meta> : null}
       </Slip>
       <View style={{ gap: t.space(1) }}>
         <Body>{copy.waitingLine}</Body>
@@ -108,11 +109,12 @@ function PaidView({ sale }: { sale: StoredSale }) {
 }
 
 function UnderpaidView({ sale }: { sale: StoredSale }) {
-  const { update, patchSale } = useStore()
+  const { data, update, patchSale } = useStore()
   const shortCoins = BigInt(sale.expected) - BigInt(sale.received!)
   const shortNaira = (Number(shortCoins) / 1e6) * sale.rate
   const chargeRest = () => {
-    const rest = createSale({ naira: shortNaira, rate: sale.rate, coin: sale.coin, recipient: sale.recipient as never, reference: newReference(randomBytes), label: sale.label })
+    const owed = data.sales.filter((o) => o.state === 'waiting' && o.coin === sale.coin).map((o) => BigInt(o.expected))
+    const rest = createSale({ naira: shortNaira, rate: sale.rate, coin: sale.coin, recipient: sale.recipient as never, reference: newReference(randomBytes), label: sale.label }, Date.now(), owed)
     const stored: StoredSale = { ...rest, expected: rest.expected.toString(), recipient: sale.recipient, day: lagosDay(rest.createdAt), state: 'waiting', reward: 'none', parentId: sale.id }
     update((d) => ({ ...d, sales: [stored, ...d.sales] }))
     router.replace(`/waiting/${stored.id}`)
