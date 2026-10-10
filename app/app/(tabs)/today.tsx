@@ -7,11 +7,12 @@ import { useShopWallet } from '@/hooks/use-shop-wallet'
 import { useStore } from '@/state/store'
 import { StoredSale } from '@/state/types'
 import { copy } from '@/ui/copy'
-import { coins, hhmm, naira, short, usd } from '@/ui/format'
+import { coins, dateText, hhmm, naira, short, usd } from '@/ui/format'
 import { Body, Button, Meta, Screen, Slip, Title } from '@/ui/kit'
 import { t } from '@/ui/theme'
 
 const PAIDISH = ['paid', 'overpaid', 'underpaid']
+const EARLIER_MAX = 30
 const LABEL: Record<string, string> = { paid: 'Paid', overpaid: 'Paid', underpaid: 'Underpaid', waiting: 'Waiting', refunded: 'Refunded' }
 
 export default function Today() {
@@ -20,6 +21,8 @@ export default function Today() {
   const balance = useDollarBalance(address)
   const today = lagosDay(useNow(60000))
   const sales = data.sales.filter((s) => s.day === today && s.state !== 'cancelled')
+  // Earlier days, newest first (sales are stored newest first), so yesterday's sale can still be opened and refunded.
+  const earlier = data.sales.filter((s) => s.day !== today && s.state !== 'cancelled').slice(0, EARLIER_MAX)
   const paid = sales.filter((s) => PAIDISH.includes(s.state))
   const nairaTotal = paid.reduce((n, s) => n + s.naira, 0)
   const usdTotal = paid.reduce((n, s) => n + BigInt(s.received ?? '0'), 0n)
@@ -44,17 +47,28 @@ export default function Today() {
           />
         </Slip>
       )}
+      {earlier.length > 0 ? (
+        <Slip style={{ flexShrink: 1 }}>
+          <Meta>{copy.earlierSales}</Meta>
+          <FlatList
+            data={earlier}
+            keyExtractor={(x) => x.id}
+            ItemSeparatorComponent={() => <View style={s.rule} />}
+            renderItem={({ item }) => <Row sale={item} showDay />}
+          />
+        </Slip>
+      ) : null}
       <View style={{ flex: 1 }} />
       <Button title={copy.closeDay} onPress={() => router.push('/close')} disabled={paid.length === 0} />
     </Screen>
   )
 }
 
-function Row({ sale }: { sale: StoredSale }) {
+function Row({ sale, showDay }: { sale: StoredSale; showDay?: boolean }) {
   const go = () => router.push(sale.state === 'waiting' ? `/waiting/${sale.id}` : `/sale/${sale.id}`)
   return (
     <Pressable onPress={go} style={s.row} accessibilityRole="button">
-      <Text style={s.time}>{hhmm(sale.createdAt)}</Text>
+      <Text style={showDay ? s.day : s.time}>{showDay ? dateText(sale.createdAt).slice(5) : hhmm(sale.createdAt)}</Text>
       <View style={{ flex: 1 }}>
         <Text style={s.main}>₦{naira(sale.naira)} · {coins(sale.received ?? sale.expected)} {sale.coin}</Text>
         <Text style={s.sub}>
@@ -71,6 +85,7 @@ const s = StyleSheet.create({
   row: { flexDirection: 'row', gap: t.space(4), paddingVertical: t.space(3), minHeight: t.tap, alignItems: 'center' },
   rule: { borderBottomWidth: 1, borderStyle: 'dashed', borderColor: t.rule },
   time: { ...t.size.meta, fontFamily: t.font.regular, color: t.ink2, width: 48, fontVariant: ['tabular-nums'] },
+  day: { ...t.size.meta, fontFamily: t.font.regular, color: t.ink2, width: 48, fontVariant: ['tabular-nums'] },
   main: { ...t.size.coin, fontFamily: t.font.medium, color: t.ink1, fontVariant: ['tabular-nums'] },
   sub: { ...t.size.meta, fontFamily: t.font.regular, color: t.ink2 },
 })

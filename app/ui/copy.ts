@@ -65,6 +65,7 @@ export const copy = {
   todayTotals: (naira: string, usd: string) => `₦${naira} today · $${usd}`,
   yourDollars: (usd: string) => `Your dollars: $${usd}`,
   todayEmpty: 'No sales yet today. Tap Till to take your first payment.',
+  earlierSales: 'Earlier days',
   balanceOffline: 'Balance unavailable offline',
   closeDay: 'Close the day',
   refund: 'Refund',
