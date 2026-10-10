@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { AppState } from 'react-native'
+import { backoffMs } from '@/core/backoff'
+import { isOffline } from '@/core/wallet-error'
 import { checkSale } from './check-sale'
 import { sendPaidAlert } from './paid-alert'
 import { TIMING } from '@/constants/app-config'
@@ -21,8 +23,10 @@ export function SaleWatcher() {
   useEffect(() => {
     let stop = false
     let busy = false
+    let failures = 0 // failed rounds in a row; a busy server (429) or no network backs the polling off
+    let pausedUntil = 0
     const tick = async () => {
-      if (busy) return
+      if (busy || Date.now() < pausedUntil) return
       busy = true
       try {
         await runBatch()
@@ -35,15 +39,28 @@ export function SaleWatcher() {
       const slowDue = Date.now() - lastSlow.current > TIMING.pollSlowMs
       if (slowDue) lastSlow.current = Date.now()
       const batch = slowDue ? open : open.slice(0, TIMING.maxFastSales)
+      if (batch.length === 0) return
+      let ok = false
+      let offline = false
+      let failed = false
       for (const s of batch) {
         if (stop) return
         await checkOne(s)
           .then(() => {
-            setOnline(true)
+            ok = true
             markChecked()
           })
-          .catch(() => setOnline(false)) // offline: try again next tick
+          .catch((e: unknown) => {
+            failed = true
+            if (isOffline(e)) offline = true
+          })
       }
+      // "No internet" only when the phone could not reach Solana at all; a server that refuses (rate limit) is
+      // not the shop's connection, so the flag is left alone and the next round waits longer.
+      if (ok) setOnline(true)
+      else if (offline) setOnline(false)
+      failures = failed ? failures + 1 : 0
+      pausedUntil = failed ? Date.now() + backoffMs(failures) : 0
     }
     const checkOne = async (s: StoredSale) => {
       const patch = await checkSale(rpc, s, latest.current)
@@ -51,7 +68,10 @@ export function SaleWatcher() {
       patchSale(s.id, patch)
       if (AppState.currentState !== 'active') void sendPaidAlert(s, patch) // shop is in WhatsApp, Telegram, or the phone is locked
       // Credit these signatures immediately so the next sale in this tick cannot reuse them.
-      latest.current = { ...latest.current, sales: latest.current.sales.map((o) => (o.id === s.id ? { ...o, ...patch } : o)) }
+      latest.current = {
+        ...latest.current,
+        sales: latest.current.sales.map((o) => (o.id === s.id ? { ...o, ...patch } : o)),
+      }
     }
     const id = setInterval(() => void tick(), TIMING.pollFastMs)
     return () => {
