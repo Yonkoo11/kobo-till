@@ -93,6 +93,6 @@ ensure_net() {
   die "emulator has no network (wifi has no carrier; run: adb reboot)"
 }
 
-# The app can start up believing it is offline ("No internet" with a working network) and then never
-# re-checks. A wifi bounce makes it look again.
+# "No internet" now means the phone really could not reach Solana (fixed 2026-10-10: a 429 from the public
+# devnet RPC used to set it). A wifi bounce gives the emulator a fresh network if the link really dropped.
 bounce_wifi() { adb_ shell svc wifi disable; sleep 3; adb_ shell svc wifi enable; sleep 6; }

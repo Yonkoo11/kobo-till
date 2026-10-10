@@ -11,5 +11,5 @@ for try in 1 2 3; do
 done
 [ -n "$NO_WAIT" ] && { echo "paid (not waiting for screen)"; exit 0; }
 wait_text "Paid ₦" 30 && exit 0
-if grep -q 'No internet' "$UI"; then bounce_wifi; fi   # app stuck in offline mode
+if grep -q 'No internet' "$UI"; then bounce_wifi; fi   # emulator link dropped
 wait_text "Paid ₦" 70 || die "no 'Paid' screen within 100 s"
