@@ -17,7 +17,7 @@ describe('walletFailure', () => {
     ],
     [new Error('Network request failed'), 'offline'],
     [new Error('-1/authorization request failed'), 'other'],
-    [new Error('HTTP error (429): Too Many Requests'), 'other'],
+    [new Error('HTTP error (429): Too Many Requests'), 'busy'],
   ])('%s -> %s', (e, kind) => expect(walletFailure(e)).toBe(kind))
 })
 

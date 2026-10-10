@@ -23,6 +23,8 @@ export class AppConfig {
 export const TIMING = {
   pollFastMs: USING_PUBLIC_RPC ? 2000 : 1000,
   pollSlowMs: 10000,
+  fastForMs: 60 * 60_000, // a sale is checked every pollFastMs for its first hour (a payment link lives an hour)
+  watchForMs: 24 * 60 * 60_000, // after that only every pollSlowMs, and not at all after a day
   maxFastSales: 3,
   stillWaitingMs: 600_000,
 } as const

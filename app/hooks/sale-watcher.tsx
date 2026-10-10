@@ -35,10 +35,14 @@ export function SaleWatcher() {
       }
     }
     const runBatch = async () => {
-      const open = latest.current.sales.filter((s) => s.state === 'waiting').sort((a, b) => b.createdAt - a.createdAt)
-      const slowDue = Date.now() - lastSlow.current > TIMING.pollSlowMs
-      if (slowDue) lastSlow.current = Date.now()
-      const batch = slowDue ? open : open.slice(0, TIMING.maxFastSales)
+      const now = Date.now()
+      const open = latest.current.sales
+        .filter((s) => s.state === 'waiting' && now - s.createdAt < TIMING.watchForMs)
+        .sort((a, b) => b.createdAt - a.createdAt)
+      const slowDue = now - lastSlow.current > TIMING.pollSlowMs
+      if (slowDue) lastSlow.current = now
+      // Days-old waiting sales were polled every two seconds forever and used up the public server's allowance (2026-10-10).
+      const batch = slowDue ? open : open.filter((s) => now - s.createdAt < TIMING.fastForMs).slice(0, TIMING.maxFastSales)
       if (batch.length === 0) return
       let ok = false
       let offline = false

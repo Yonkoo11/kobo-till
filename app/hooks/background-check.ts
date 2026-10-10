@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { createSolanaRpc } from '@solana/kit'
+import { createKoboRpc } from '@/core/rpc'
 import * as BackgroundTask from 'expo-background-task'
 import * as TaskManager from 'expo-task-manager'
 import { MAINNET_RPC, TEST_RPC } from '@/constants/app-config'
@@ -19,7 +19,7 @@ TaskManager.defineTask(PAID_CHECK_TASK, async () => {
     const raw = await AsyncStorage.getItem(STORE_KEY)
     if (!raw) return BackgroundTask.BackgroundTaskResult.Success
     let data: KoboData = { ...EMPTY, ...JSON.parse(raw) }
-    const rpc = createSolanaRpc(TEST_RPC || MAINNET_RPC)
+    const rpc = createKoboRpc(TEST_RPC || MAINNET_RPC)
     const open = data.sales
       .filter((s) => s.state === 'waiting' && Date.now() - s.createdAt < LOOKBACK_MS)
       .sort((a, b) => b.createdAt - a.createdAt)

@@ -1,5 +1,6 @@
+import { isBusy } from './busy'
 /** Which of the known wallet failures happened, from the error a Mobile Wallet Adapter call throws. */
-export type WalletFailure = 'offline' | 'cancelled' | 'expired' | 'no-sol' | 'other'
+export type WalletFailure = 'offline' | 'busy' | 'cancelled' | 'expired' | 'no-sol' | 'other'
 
 /**
  * True only when the phone could not reach the server at all (seen 2026-10-06: "fetch failed: java.net.ConnectException").
@@ -13,6 +14,7 @@ export function isOffline(e: unknown): boolean {
 export function walletFailure(e: unknown): WalletFailure {
   const s = String((e as { message?: string })?.message ?? e).toLowerCase()
   if (isOffline(e)) return 'offline'
+  if (isBusy(e)) return 'busy'
   if (/declin|cancel|reject|not authori[sz]ed|user/.test(s)) return 'cancelled'
   if (/blockhash|expired|block height exceeded/.test(s)) return 'expired'
   if (/insufficient|lamports|fee payer|0x1\b|debit an account/.test(s)) return 'no-sol'
