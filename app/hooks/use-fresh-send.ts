@@ -111,13 +111,17 @@ export function useFreshSend() {
     async (shop: Address): Promise<ShopNonce> => {
       const found = await readNonce(rpc, shop)
       if (found) return found
+      // The setup is the one send that still runs on a one-minute blockhash. Wake and connect the wallet
+      // first (Phantom cold start plus its Connect screen measured 44 s on 2026-10-11), then fetch the
+      // blockhash, so the whole minute is left for the approval tap.
+      await run(shop, async () => undefined)
       const sig = await sendWith(await createNonceIxs(rpc, shop), shop, null)
       await waitConfirmed(rpc, sig, 'refund setup')
       const made = await readNonce(rpc, shop)
       if (!made) throw new Error('refund setup landed but the nonce account is missing')
       return made
     },
-    [rpc, sendWith],
+    [rpc, run, sendWith],
   )
 
   /** Instructions signed by the shop's wallet. With a known shop the approval cannot expire (durable nonce). */
