@@ -9,9 +9,10 @@ export const MAINNET_RPC = process.env.EXPO_PUBLIC_KOBO_RPC_URL || PUBLIC_RPC
 export const USING_PUBLIC_RPC = MAINNET_RPC === PUBLIC_RPC
 
 export class AppConfig {
-  // The wallet shows "identity could not be verified" until this site serves .well-known/assetlinks.json
-  // for the app's signing key (seen on Phantom 2026-10-05). Publish step: GitHub Pages for the repo.
-  static identity: AppIdentity = { name: 'Kobo', uri: 'https://yonkoo11.github.io/kobo-till', icon: 'favicon.png' }
+  // The wallet verifies this site's /.well-known/assetlinks.json against the app's signing key. The verifier
+  // wants Content-Type exactly "application/json"; GitHub Pages adds a charset, so the docs site is on Vercel
+  // (docs/api/assetlinks.js serves it). Phantom declined every saved session until this moved (2026-10-11).
+  static identity: AppIdentity = { name: 'Kobo', uri: 'https://kobo-till.vercel.app', icon: 'favicon.png' }
   static networks: SolanaCluster[] = [
     // A test build on devnet says so to the wallet: test wallets refuse to send on solana:localnet.
     ...(TEST_RPC ? [/devnet/.test(TEST_RPC) ? createSolanaDevnet({ url: TEST_RPC }) : createSolanaLocalnet({ url: TEST_RPC })] : []),
