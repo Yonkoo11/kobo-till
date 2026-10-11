@@ -14,6 +14,7 @@ import {
 } from '@solana/kit'
 import { type KitMobileWallet, transact } from '@solana-mobile/mobile-wallet-adapter-protocol-kit'
 import { useMobileWallet } from '@wallet-ui/react-native-kit'
+import { useRpc } from '@/hooks/use-rpc'
 
 const decode = getBase58Decoder()
 
@@ -26,16 +27,20 @@ export function isRefusedPass(e: unknown): boolean {
 
 /**
  * Sends through the shop's wallet.
- * - The blockhash is fetched only after the wallet has opened and authorised the session, at 'confirmed'. A transaction
- *   lives about 60 seconds from its blockhash; fetched before the wallet opened, at the default 'finalized', the time
- *   spent unlocking and approving used it up ("Blockhash not found", devnet 2026-10-06).
+ * - Nothing touches the network while the wallet is on screen. Android 15 cuts a background app's network as soon as
+ *   the wallet comes to the front (Kobo's firewall state read "blocked: APP_BACKGROUND"; the blockhash fetch inside the
+ *   session died with "Unable to resolve host", mainnet refund 2026-10-11). So the blockhash is fetched at 'confirmed'
+ *   just before the wallet opens, and a swap transaction is built before too. A transaction lives about 60 seconds from
+ *   its blockhash; 'confirmed' (not the default 'finalized', which is ~13 s staler) leaves the whole minute for the
+ *   approval, and a slower approval fails as 'expired' with copy that says so.
  * - If the wallet refuses the saved pass, the pass is dropped and the wallet is asked once for a fresh one, in a new
  *   session (Phantom closed the session on a refused pass, so the library's in-session retry never ran, 2026-10-06).
  * - `from`, when given, must be the wallet that signs; a different account is refused before anything is signed.
  * Returns the signature as a base58 string.
  */
 export function useFreshSend() {
-  const { chain, client, identity, store } = useMobileWallet()
+  const { chain, identity, store } = useMobileWallet()
+  const rpc = useRpc()
 
   // Reads the saved pass at call time (not from a render), so a pass dropped a moment ago is really gone.
   const authorize = useCallback(
@@ -84,9 +89,9 @@ export function useFreshSend() {
 
   /** Instructions signed by the shop's wallet as fee payer. */
   const sendInstructions = useCallback(
-    (instructions: readonly Instruction[], from?: Address) =>
-      run(from, async (wallet, owner) => {
-        const { context, value: blockhash } = await client.rpc.getLatestBlockhash({ commitment: 'confirmed' }).send()
+    async (instructions: readonly Instruction[], from?: Address) => {
+      const { context, value: blockhash } = await rpc.getLatestBlockhash({ commitment: 'confirmed' }).send()
+      return run(from, async (wallet, owner) => {
         const message = pipe(
           createTransactionMessage({ version: 0 }),
           (m) => setTransactionMessageFeePayer(owner, m),
@@ -95,18 +100,24 @@ export function useFreshSend() {
         )
         const [sig] = await wallet.signAndSendTransactions({ minContextSlot: Number(context.slot), transactions: [message] })
         return decode.decode(sig)
-      }),
-    [run, client],
+      })
+    },
+    [run, rpc],
   )
 
-  /** A transaction built by someone else (a Jupiter swap), fetched once the wallet is ready. */
+  /**
+   * A transaction built by someone else (a Jupiter swap), fetched before the wallet opens when the signer is known
+   * (`from`), otherwise once the wallet has said who signs.
+   */
   const sendBuilt = useCallback(
-    (build: (owner: Address) => Promise<Transaction>, from?: Address) =>
-      run(from, async (wallet, owner) => {
-        const tx = await build(owner)
+    async (build: (owner: Address) => Promise<Transaction>, from?: Address) => {
+      const built = from ? await build(from) : undefined
+      return run(from, async (wallet, owner) => {
+        const tx = built ?? (await build(owner))
         const [sig] = await wallet.signAndSendTransactions({ transactions: [tx] })
         return decode.decode(sig)
-      }),
+      })
+    },
     [run],
   )
 
