@@ -1,6 +1,7 @@
 import {
   type Address,
   createAddressWithSeed,
+  fetchEncodedAccount,
   type Instruction,
   type Nonce,
   type Rpc,
@@ -10,10 +11,11 @@ import {
   type TransactionMessage,
 } from '@solana/kit'
 import {
-  fetchMaybeNonce,
-  getCreateAccountWithSeedInstruction,
+  decodeNonce,
+  getAllocateWithSeedInstruction,
   getInitializeNonceAccountInstruction,
   getNonceSize,
+  getTransferSolInstruction,
   SYSTEM_PROGRAM_ADDRESS,
 } from '@solana-program/system'
 
@@ -27,20 +29,31 @@ export function nonceAddress(shop: Address): Promise<Address> {
   return createAddressWithSeed({ baseAddress: shop, programAddress: SYSTEM_PROGRAM_ADDRESS, seed: NONCE_SEED })
 }
 
-/** The shop's durable nonce, or null before the one-time setup. */
-export async function readNonce(rpc: Rpc<SolanaRpcApi>, shop: Address): Promise<ShopNonce | null> {
-  const account = await fetchMaybeNonce(rpc, await nonceAddress(shop), { commitment: 'confirmed' })
-  if (!account.exists) return null
-  return { nonce: account.data.blockhash as unknown as Nonce, nonceAccountAddress: account.address, nonceAuthorityAddress: shop }
+async function fetchNonceSlot(rpc: Rpc<SolanaRpcApi>, shop: Address) {
+  return fetchEncodedAccount(rpc, await nonceAddress(shop), { commitment: 'confirmed' })
 }
 
-/** One-time setup: the shop creates and owns its nonce account (rent stays refundable). */
+/** The shop's durable nonce, or null before the one-time setup (dust someone sent to the address does not count). */
+export async function readNonce(rpc: Rpc<SolanaRpcApi>, shop: Address): Promise<ShopNonce | null> {
+  const account = await fetchNonceSlot(rpc, shop)
+  if (!account.exists || account.programAddress !== SYSTEM_PROGRAM_ADDRESS || account.data.length !== getNonceSize()) return null
+  const { data, address } = decodeNonce(account)
+  return { nonce: data.blockhash as unknown as Nonce, nonceAccountAddress: address, nonceAuthorityAddress: shop }
+}
+
+/**
+ * One-time setup: the shop funds, sizes and initialises its nonce account (rent stays refundable).
+ * Top-up + allocate instead of create-account, so lamports anyone dropped on the address beforehand cannot block it.
+ */
 export async function createNonceIxs(rpc: Rpc<SolanaRpcApi>, shop: Address): Promise<Instruction[]> {
   const space = BigInt(getNonceSize())
-  const amount = await rpc.getMinimumBalanceForRentExemption(space).send()
-  const newAccount = await nonceAddress(shop)
+  const [rent, slot] = await Promise.all([rpc.getMinimumBalanceForRentExemption(space).send(), fetchNonceSlot(rpc, shop)])
+  const newAccount = slot.address
+  const shortfall = rent - (slot.exists ? slot.lamports : 0n)
+  const base = shop as never
   return [
-    getCreateAccountWithSeedInstruction({ payer: shop as never, newAccount, base: shop, seed: NONCE_SEED, amount, space, programAddress: SYSTEM_PROGRAM_ADDRESS }),
+    ...(shortfall > 0n ? [getTransferSolInstruction({ source: base, destination: newAccount, amount: shortfall })] : []),
+    getAllocateWithSeedInstruction({ newAccount, baseAccount: base, base: shop, seed: NONCE_SEED, space, programAddress: SYSTEM_PROGRAM_ADDRESS }),
     getInitializeNonceAccountInstruction({ nonceAccount: newAccount, nonceAuthority: shop }),
   ]
 }

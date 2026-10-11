@@ -5,7 +5,16 @@ import { createNonceIxs, nonceAddress, type ShopNonce, withLifetime } from './no
 
 const shop = address('BUzviZoMSNdTFo1mKMBfz4fuUTy1CE6wf4LQAe9Btjg9')
 const other = address('HnsjaFN7Z1fuctcB1pRCd2Ddi9DjFfT3zetp4quK9Cf1')
-const rpc = { getMinimumBalanceForRentExemption: () => ({ send: async () => 1_447_680n }) } as never
+const rent = 1_447_680n
+const rpcWith = (lamports: bigint | null) =>
+  ({
+    getMinimumBalanceForRentExemption: () => ({ send: async () => rent }),
+    getAccountInfo: () => ({
+      send: async () => ({ context: { slot: 0n }, value: lamports === null ? null : { data: ['', 'base64'], owner: SYSTEM_PROGRAM_ADDRESS, lamports, executable: false, space: 0n, rentEpoch: 0n } }),
+    }),
+  }) as never
+const rpc = rpcWith(null)
+const amountOf = (ix: Instruction) => new DataView(ix.data!.buffer, ix.data!.byteOffset).getBigUint64(4, true)
 const blockhash = { blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi' as Blockhash, lastValidBlockHeight: 1n }
 const memo: Instruction = { programAddress: address('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'), data: new Uint8Array([1]) }
 
@@ -18,13 +27,25 @@ describe('nonceAddress', () => {
 })
 
 describe('createNonceIxs', () => {
-  it('creates the derived account with rent, then initialises it with the shop as authority', async () => {
-    const [create, init] = await createNonceIxs(rpc, shop)
+  it('funds the full rent, allocates the derived account, then initialises it with the shop as authority', async () => {
+    const ixs = await createNonceIxs(rpc, shop)
     const derived = await nonceAddress(shop)
-    expect(create.programAddress).toBe(SYSTEM_PROGRAM_ADDRESS)
-    expect(create.accounts?.map((a) => a.address)).toEqual([shop, derived])
-    expect(init.programAddress).toBe(SYSTEM_PROGRAM_ADDRESS)
+    expect(ixs).toHaveLength(3)
+    const [fund, allocate, init] = ixs
+    expect(ixs.map((i) => i.programAddress)).toEqual([SYSTEM_PROGRAM_ADDRESS, SYSTEM_PROGRAM_ADDRESS, SYSTEM_PROGRAM_ADDRESS])
+    expect(fund.accounts?.map((a) => a.address)).toEqual([shop, derived])
+    expect(amountOf(fund)).toBe(rent)
+    expect(allocate.accounts?.map((a) => a.address)).toEqual([derived, shop])
     expect(init.accounts?.[0].address).toBe(derived)
+  })
+  it('only tops up the shortfall when someone already dropped lamports on the address', async () => {
+    const [fund] = await createNonceIxs(rpcWith(500n), shop)
+    expect(amountOf(fund)).toBe(rent - 500n)
+  })
+  it('skips the funding step when the address already holds the rent', async () => {
+    const ixs = await createNonceIxs(rpcWith(rent), shop)
+    expect(ixs).toHaveLength(2)
+    expect(ixs[0].accounts?.[0].address).toBe(await nonceAddress(shop))
   })
 })
 
