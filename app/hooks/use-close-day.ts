@@ -1,4 +1,5 @@
-import { address, Rpc, Signature, SolanaRpcApi } from '@solana/kit'
+import { address } from '@solana/kit'
+import { waitConfirmed } from '@/core/confirm'
 import { useFreshSend } from '@/hooks/use-fresh-send'
 import { useCallback, useEffect, useState } from 'react'
 import { SKR } from '@/core/constants'
@@ -29,18 +30,6 @@ export function useRewardLines() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rpc])
   return lines
-}
-
-async function waitConfirmed(rpc: Rpc<SolanaRpcApi>, sig: string, timeoutMs = 45000) {
-  const end = Date.now() + timeoutMs
-  while (Date.now() < end) {
-    const { value } = await rpc.getSignatureStatuses([sig as Signature]).send()
-    const st = value[0]
-    if (st?.err) throw new Error('swap failed on chain')
-    if (st && (st.confirmationStatus === 'confirmed' || st.confirmationStatus === 'finalized')) return
-    await new Promise((r) => setTimeout(r, 1500))
-  }
-  throw new Error('swap not confirmed in time')
 }
 
 const toSaved = (sig: string, minOut: bigint, lines: RewardLine[]): SavedSwap => ({
@@ -84,7 +73,7 @@ export function useSendRewards(shop: string | null, shopName: string) {
         setStep('approving')
         // The swap is built once the wallet is ready, so Jupiter's blockhash is fresh when the shop approves.
         const swapSig = await sendBuilt((owner) => swapTransaction(quote, owner), address(shop!))
-        await waitConfirmed(rpc, swapSig)
+        await waitConfirmed(rpc, swapSig, 'swap')
         saved = toSaved(swapSig, quote.minOut, eligible)
         const s = saved
         update((d) => ({ ...d, rewardSwap: s }))

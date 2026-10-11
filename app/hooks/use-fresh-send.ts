@@ -9,11 +9,12 @@ import {
   type Instruction,
   pipe,
   setTransactionMessageFeePayer,
-  setTransactionMessageLifetimeUsingBlockhash,
   type Transaction,
 } from '@solana/kit'
 import { type KitMobileWallet, transact } from '@solana-mobile/mobile-wallet-adapter-protocol-kit'
 import { useMobileWallet } from '@wallet-ui/react-native-kit'
+import { waitConfirmed } from '@/core/confirm'
+import { createNonceIxs, readNonce, type ShopNonce, withLifetime } from '@/core/nonce'
 import { useRpc } from '@/hooks/use-rpc'
 
 const decode = getBase58Decoder()
@@ -87,15 +88,15 @@ export function useFreshSend() {
     [authorize, store],
   )
 
-  /** Instructions signed by the shop's wallet as fee payer. */
-  const sendInstructions = useCallback(
-    async (instructions: readonly Instruction[], from?: Address) => {
+  /** Instructions signed by the shop's wallet as fee payer, with the lifetime already chosen. */
+  const sendWith = useCallback(
+    async (instructions: readonly Instruction[], from: Address | undefined, nonce: ShopNonce | null) => {
       const { context, value: blockhash } = await rpc.getLatestBlockhash({ commitment: 'confirmed' }).send()
       return run(from, async (wallet, owner) => {
         const message = pipe(
           createTransactionMessage({ version: 0 }),
           (m) => setTransactionMessageFeePayer(owner, m),
-          (m) => setTransactionMessageLifetimeUsingBlockhash(blockhash, m),
+          (m) => withLifetime(m, blockhash, nonce),
           (m) => appendTransactionMessageInstructions(instructions, m),
         )
         const [sig] = await wallet.signAndSendTransactions({ minContextSlot: Number(context.slot), transactions: [message] })
@@ -103,6 +104,26 @@ export function useFreshSend() {
       })
     },
     [run, rpc],
+  )
+
+  /** The shop's durable nonce, created on first use (one extra approval; the rent stays the shop's). */
+  const shopNonce = useCallback(
+    async (shop: Address): Promise<ShopNonce> => {
+      const found = await readNonce(rpc, shop)
+      if (found) return found
+      const sig = await sendWith(await createNonceIxs(rpc, shop), shop, null)
+      await waitConfirmed(rpc, sig, 'refund setup')
+      const made = await readNonce(rpc, shop)
+      if (!made) throw new Error('refund setup landed but the nonce account is missing')
+      return made
+    },
+    [rpc, sendWith],
+  )
+
+  /** Instructions signed by the shop's wallet. With a known shop the approval cannot expire (durable nonce). */
+  const sendInstructions = useCallback(
+    async (instructions: readonly Instruction[], from?: Address) => sendWith(instructions, from, from ? await shopNonce(from) : null),
+    [sendWith, shopNonce],
   )
 
   /**
