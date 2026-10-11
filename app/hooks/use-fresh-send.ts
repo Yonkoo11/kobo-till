@@ -15,6 +15,7 @@ import { type KitMobileWallet, transact } from '@solana-mobile/mobile-wallet-ada
 import { useMobileWallet } from '@wallet-ui/react-native-kit'
 import { waitConfirmed } from '@/core/confirm'
 import { createNonceIxs, readNonce, type ShopNonce, withLifetime } from '@/core/nonce'
+import { passIdentity, rememberPassIdentity } from '@/core/pass-identity'
 import { useRpc } from '@/hooks/use-rpc'
 
 const decode = getBase58Decoder()
@@ -44,10 +45,15 @@ export function useFreshSend() {
   const rpc = useRpc()
 
   // Reads the saved pass at call time (not from a render), so a pass dropped a moment ago is really gone.
+  // A pass issued under another identity address is not reused: the wallet keeps the address it first saw with the
+  // pass, verifies THAT one when asked to sign, and sits silent when it fails (Phantom, 2026-10-11, after the identity
+  // moved from GitHub Pages to Vercel). A fresh connect under the new address gets a pass the wallet will honour.
   const authorize = useCallback(
     async (wallet: KitMobileWallet): Promise<Address> => {
-      const token = store.$authToken.get()
+      const saved = store.$authToken.get()
+      const token = saved && (await passIdentity()) === (identity.uri ?? '') ? saved : undefined
       const result = await wallet.authorize({ chain, identity, ...(token ? { auth_token: token } : {}) })
+      await rememberPassIdentity(identity.uri ?? '')
       const accounts = result.accounts.map((a) => {
         const address = getAddressCodec().decode(getBase64Encoder().encode(a.address))
         return { address, addressBase64: a.address, icon: a.icon, label: a.label ?? address }
