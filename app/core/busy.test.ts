@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isBusy, retryWhenBusy } from './busy'
+import { isBusy, isOffline, retryWhenBusy } from './busy'
 
 const busy = () => Object.assign(new Error('HTTP error (429): Too Many Requests'), { context: { statusCode: 429 } })
 const noSleep = async () => undefined
@@ -12,6 +12,15 @@ describe('isBusy', () => {
     [new Error('HTTP error (503): Service Unavailable'), false],
     [new Error('Blockhash not found'), false],
   ])('%s -> %s', (e, want) => expect(isBusy(e)).toBe(want))
+})
+
+describe('isOffline', () => {
+  it.each([
+    [new Error('fetch failed: java.net.UnknownHostException: Unable to resolve host "api.mainnet-beta.solana.com": No address associated with hostname'), true],
+    [new Error('Network request failed'), true],
+    [new Error('HTTP error (429): Too Many Requests'), false],
+    [new Error('Blockhash not found'), false],
+  ])('%s -> %s', (e, want) => expect(isOffline(e)).toBe(want))
 })
 
 describe('retryWhenBusy', () => {
@@ -32,8 +41,18 @@ describe('retryWhenBusy', () => {
   })
   it('does not retry other failures', async () => {
     let calls = 0
-    await expect(retryWhenBusy(async () => { calls++; throw new Error('Network request failed') }, noSleep)).rejects.toThrow(/Network/)
+    await expect(retryWhenBusy(async () => { calls++; throw new Error('Blockhash not found') }, noSleep)).rejects.toThrow(/Blockhash/)
     expect(calls).toBe(1)
+  })
+  it('retries while the phone has no route to the server (network back a moment after the wallet returns)', async () => {
+    let calls = 0
+    const out = await retryWhenBusy(async () => {
+      calls++
+      if (calls < 2) throw new Error('fetch failed: java.net.UnknownHostException: Unable to resolve host "api.mainnet-beta.solana.com": No address associated with hostname')
+      return 'ok'
+    }, noSleep)
+    expect(out).toBe('ok')
+    expect(calls).toBe(2)
   })
   it('waits 1, 2 and 4 seconds between tries', async () => {
     const waits: number[] = []

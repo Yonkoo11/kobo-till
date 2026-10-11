@@ -4,10 +4,19 @@ export function isBusy(e: unknown): boolean {
   return /429|too many requests|8100002/.test(s)
 }
 
+/**
+ * The phone had no route to the server: DNS or socket failure, not an answer. Android 15 cuts a background app's
+ * network and hands it back a moment after the app returns from the wallet (refund setup died on this, 2026-10-11).
+ */
+export function isOffline(e: unknown): boolean {
+  const s = String((e as { message?: string })?.message ?? e).toLowerCase()
+  return /unable to resolve host|unknownhostexception|network request failed|fetch failed|econnrefused|enetunreach|software caused connection abort/.test(s)
+}
+
 const WAITS_MS = [1000, 2000, 4000]
 
 /**
- * Runs `fn`; a busy answer is retried after 1, 2 and 4 seconds (three retries, seven seconds in all), then thrown.
+ * Runs `fn`; a busy or offline answer is retried after 1, 2 and 4 seconds (three retries, seven seconds in all), then thrown.
  * Any other failure is thrown at once. The public mainnet server answers 429 under load (refund failed on it, 2026-10-10).
  */
 export async function retryWhenBusy<T>(fn: () => Promise<T>, sleep: (ms: number) => Promise<void> = wait): Promise<T> {
@@ -15,7 +24,7 @@ export async function retryWhenBusy<T>(fn: () => Promise<T>, sleep: (ms: number)
     try {
       return await fn()
     } catch (e) {
-      if (!isBusy(e) || attempt >= WAITS_MS.length) throw e
+      if ((!isBusy(e) && !isOffline(e)) || attempt >= WAITS_MS.length) throw e
       await sleep(WAITS_MS[attempt])
     }
   }
