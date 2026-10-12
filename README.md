@@ -11,7 +11,7 @@
 
 **Kobo is an Android till for Nigerian shops. The shopkeeper types a naira price, Kobo shows one Solana Pay QR for the matching USDC, and the screen turns to Paid when the payment lands in the shop's own wallet. Two real payments from Phantom on Solana mainnet each showed Paid within seconds of their block.**
 
-**[ Watch the demo ↗ ](assets/media/kobo-demo.mp4)** · **[ Pitch deck ↗ ](assets/media/kobo-deck.pdf)** · **[ Verify it yourself ↗ ](#verify-it-yourself-in-3-minutes)** · **[ The receipt ↗ ](https://solscan.io/tx/4rFCgZJoLApdchHC1rCFD9d9ypLXH9Dpyjy3LMZaHaVdjpRewa8uKETrzcBrzxu5RK5TrZsbnUX1p2VM2WWFRdBx)**
+**[ Watch the demo ↗ ](assets/media/kobo-demo-2026-10-12.mp4)** · **[ Android app (APK) ↗ ](apk/kobo-mainnet.apk)** · **[ Pitch deck ↗ ](assets/media/kobo-deck.pdf)** · **[ Verify it yourself ↗ ](#verify-it-yourself-in-3-minutes)** · **[ The receipt ↗ ](https://solscan.io/tx/4rFCgZJoLApdchHC1rCFD9d9ypLXH9Dpyjy3LMZaHaVdjpRewa8uKETrzcBrzxu5RK5TrZsbnUX1p2VM2WWFRdBx)**
 
 Built for Clock In (Solana Mobile x Radiants).
 
@@ -23,7 +23,7 @@ Built for Clock In (Solana Mobile x Radiants).
 
 ## ▶ Demo
 
-*A 68-second walk through one real ₦150 sale on Solana mainnet, 2026-10-05: [assets/media/kobo-demo.mp4](assets/media/kobo-demo.mp4). Both phones are Android emulators with Google Play, the shop running Kobo and the customer running Phantom. The shop name is a test name. In the video's customer scene Phantom shows SOL: our test opened the link with a phone command that cut it at the first `&`. Opened from the pay page, Phantom shows 0.12 USDC, as pictured below.*
+*A 1:49 walk through one sale and its refund on Solana devnet, 2026-10-12: [assets/media/kobo-demo-2026-10-12.mp4](assets/media/kobo-demo-2026-10-12.mp4). The till runs the test build on an Android emulator (banner: "Test network: not real money"); the customer wallet is a devnet payer and the refund is signed through Mobile Wallet Adapter by Solana Mobile's reference test wallet. Payment [2KxcAj…](https://explorer.solana.com/tx/2KxcAjynuT6UPUi5JtLba4DN9VnxFSgRCtQJS17ckHUG251dZA1rt8BjK4BFB8qdwUNrMyNHgcaBd9dzFFtLqtDK?cluster=devnet), refund [3TSBA4…](https://explorer.solana.com/tx/3TSBA4p3VazNYe4abmd1f7yCnSgAZF8VMvwYcdZPMaagnNrUAX5YvbetATqHe2kVHxe7yNk5BKE7M2mn2jgCSMdW?cluster=devnet). The narration is a Gemini guide voice. The installable app is [apk/kobo-mainnet.apk](apk/kobo-mainnet.apk) (62.5 MB, mainnet build of 999e7b5, 2026-10-12; sideload on Android 8 or later). The earlier 68-second mainnet cut (one real ₦150 sale, 2026-10-05) is at [assets/media/kobo-demo.mp4](assets/media/kobo-demo.mp4); in its customer scene Phantom shows SOL because our test opened the link with a phone command that cut it at the first `&`. Opened from the pay page, Phantom shows 0.12 USDC, as pictured below.*
 
 <table>
 <tr>
@@ -184,7 +184,7 @@ All money logic lives in `app/core/` with no screen code in it, which is why the
 | Paid notification while the till is closed | Real on an emulator, with Kobo's process closed: Android woke Kobo for the background check and it posted "Paid ₦300" (devnet). The first build missed this case because the check was registered by a screen, which never loads in a background wake; it now registers at start-up. Android decides when that check runs, at most every 15 minutes, so a closed till can be up to 15 minutes late. With the till open, Paid shows within seconds. |
 | Printed receipt | The 58 mm receipt renders and its QR decodes to the Solscan link. Not yet printed on a physical printer. |
 | Underpaid, part payments, refund maths | Run on a local Solana network only. |
-| Refund signed by a wallet | Real on devnet: Solana Mobile's test wallet signed and sent a 0.76 test-coin refund ([Solscan](https://solscan.io/tx/5CKfPGHnWd7QLJawBX5v7WRCqWUehtqM6wE4UzmZUVze9fNb4tB2ETvFygLhg5zEtoBYfwp8svzYQbY37L2A4fKx?cluster=devnet)). Not yet on mainnet with Phantom. Two mainnet attempts failed first: the shop wallet had no SOL for the fee (Kobo now checks and says how much to add), then the approval outlived the transaction's one-minute lifetime (Kobo now fetches that lifetime only after the wallet has opened). |
+| Refund signed by a wallet | Real on devnet, twice: Solana Mobile's test wallet signed a 0.76 test-coin refund ([Solscan](https://solscan.io/tx/5CKfPGHnWd7QLJawBX5v7WRCqWUehtqM6wE4UzmZUVze9fNb4tB2ETvFygLhg5zEtoBYfwp8svzYQbY37L2A4fKx?cluster=devnet)) and, on 2026-10-12, a 0.230002 USDC refund on a durable nonce ([Explorer](https://explorer.solana.com/tx/3TSBA4p3VazNYe4abmd1f7yCnSgAZF8VMvwYcdZPMaagnNrUAX5YvbetATqHe2kVHxe7yNk5BKE7M2mn2jgCSMdW?cluster=devnet)). Not yet on mainnet with Phantom: 11 attempts on 2026-10-11 and 2026-10-12 did not land. What they taught, now in the code: the shop wallet needs SOL for the fee (Kobo checks and says how much); Android 15 cuts a background app's network while the wallet is in front (nothing touches the network while the wallet is open); the approval could outlive a one-minute transaction (the shop now keeps a durable nonce, so it cannot); Phantom goes silent on a pass issued under an older identity address (Kobo asks for a fresh pass). |
 | Seeker rewards signed by a real wallet | Not done. The swap needs Jupiter on mainnet and a customer with a Seeker Genesis Token. |
 | Solflare and the Seeker wallet | Not yet tested. |
 | Tap to pay (NFC) | Not built. |
@@ -212,7 +212,7 @@ assets/readme/    # the pictures on this page, built by scripts/readme-images.cj
 assets/media/     # the demo video and the pitch deck
 brand/final/      # the app icon set
 deck/             # the pitch deck source (node deck/build.cjs)
-video/            # the demo video source (Remotion)
+video/            # the demo video: brief, script, narration and the owner's voice sheet (the Remotion engine stays local)
 build-apk.sh      # builds the Android release app
 DESIGN_SYSTEM.md  # colours, type, the receipt slip, motion
 ```

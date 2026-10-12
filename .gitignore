@@ -78,3 +78,10 @@ video/DECISIONS.md
 video/SCRIPT.md
 video/STORYBOARD.md
 .deploy-state.json
+
+# Demo video engine (footage, renders, node_modules; the script and brief are tracked)
+video/engine/
+video/out/
+video/BRIEF.md
+video/vo-script.txt
+video/RECORD-YOUR-VOICE.md
